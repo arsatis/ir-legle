@@ -8,23 +8,22 @@ class QueryDetails:
 
     Args:
         query         (str)  : String form of the whole query
-        relevant_docs (list) : List of all the given relevant doc Ids
+        relevant_docs (list) : List of all the given relevant doc_ids
 
     Variables:
         type                : the type of querym which is either a boolean or free-text
         terms (free-text)   : all the terms in the free-text query
-        lhs (boolean)       : term on the LHS of the AND query
-        rhs (boolean)       : term on the RHS of the AND query
+        lhs (boolean query) : term on the LHS of the AND query
+        rhs (boolean query) : term on the RHS of the AND query
+        relevant_docs       : List of all the given relevant doc_ids 
     """
     def __init__(self, query, relevant_docs):
-        #? Edge case: 2 phrasal queries -> "apple bottom" AND "hello world" <- is this possible?
-
         self.type = "free-text"
 
         # Word_tokenization
         tokens = word_tokenize(query)
 
-        # Check if its boolean query
+        # Check if it's a boolean query
         for i in range(len(tokens)):
             if tokens[i] == "AND":
                 self.type = "boolean"
@@ -58,6 +57,7 @@ class QueryDetails:
             self.terms = tokens
         else:
             # check if there's phrasal_query, and on which side
+            #? Edge case: 2 phrasal queries -> "apple bottom" AND "hello world" <- is this possible?
             if phrasal_start_index != -1:
                 if phrasal_start_index == 1:
                     self.lhs = phrasal_query
