@@ -4,24 +4,25 @@ import sys
 import getopt
 
 from query import QueryDetails
+from models import VectorSpaceModel
 
 def get_posting_list(dictionary, postings, term):
-        """
-        Retrieves posting list of term from posting file
-        Args:
-            term (str): Target term
-        Returns:
-            posting_list (list): List of documentId-frequency pairs
-        """
-        if term not in dictionary:
-            return []
+    """
+    Retrieves posting list of term from posting file
+    Args:
+        term (str): Target term
+    Returns:
+        posting_list (list): List of documentId-frequency pairs
+    """
+    if term not in dictionary:
+        return []
 
-        _, pos, size = dictionary[term]
+    _, pos, size = dictionary[term]
 
-        postings.seek(pos)
-        posting_list = pickle.loads(postings.read(size))
-        
-        return posting_list
+    postings.seek(pos)
+    posting_list = pickle.loads(postings.read(size))
+    
+    return posting_list
 
 def usage():
     print("usage: " + sys.argv[0] + " -d dictionary-file -p postings-file -q file-of-queries -o output-file-of-results")
@@ -37,7 +38,6 @@ def run_search(dict_file, postings_file, query_file, results_file):
         results_file  (str): File path of output result file
     """
     print('running search on the queries...')
-
 
     # TEMPORARY READ DICT AND POSTING
     with open(dict_file, 'rb') as f:
@@ -61,6 +61,14 @@ def run_search(dict_file, postings_file, query_file, results_file):
         query_details = QueryDetails(query, lst_of_relevant_docs)
         print("type: ", query_details.type)
         print("terms: ", query_details.terms)
+
+        if query_details.type == "free-text":
+            # vector space ranking for free text queries
+            free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
+            score_id_pairs = free_text_model.cosine_score(query_details, k=10)
+            print(list(score_id_pairs))
+        else:
+            pass
 
 dictionary_file = postings_file = query_file = output_file_of_results = None
 
