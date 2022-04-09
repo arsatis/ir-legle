@@ -59,7 +59,8 @@ def run_search(dict_file, postings_file, query_file, results_file):
             count += 1
 
         query_details = QueryDetails(query, lst_of_relevant_docs)
-
+        print("type: ", query_details.type)
+        print("terms: ", query_details.terms)
 
 dictionary_file = postings_file = query_file = output_file_of_results = None
 
