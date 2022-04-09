@@ -1,0 +1,1 @@
+"this is a query that shouldn't work" AND AND AND "is it ok if this is working"
