@@ -12,7 +12,7 @@ def get_posting_list(dictionary, postings, term):
     Args:
         term (str): Target term
     Returns:
-        posting_list (list): List of documentId-frequency pairs
+        posting_list (list): List of documentId - list of positions pairs
     """
     if term not in dictionary:
         return []
@@ -40,6 +40,7 @@ def boolean_retrieval(terms, dictionary, postings):
         posting_lst = get_posting_list(dictionary, postings, terms[i])
         if posting_lst:
             posting_lst = posting_lst[1]
+            print(posting_lst)
         posting_lsts.append(posting_lst)
 
     print(posting_lsts)
@@ -95,7 +96,7 @@ def run_search(dict_file, postings_file, query_file, results_file):
 
     print("posting list of 'yong' : ", get_posting_list(dictionary, postings, 'yong'))
 
-    with open(query_file) as f:
+    with open(query_file, 'r') as f:
         count = 0
         lst_of_relevant_docs = []
 

@@ -5,6 +5,7 @@ import getopt
 import pickle
 import collections
 import math
+import time
 
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem import PorterStemmer
@@ -23,7 +24,7 @@ def create_dictionary(in_dir):
     doc_weight = {}
     stemmer = PorterStemmer()
 
-    with open(in_dir, 'r') as f:
+    with open(in_dir, 'r', encoding="utf8") as f:
         reader = csv.reader(f) # read rows into a dictionary format
         for entry in reader:
             splitter = entry[2].split("Judgment:") # Extracts zone: judgement
@@ -34,6 +35,7 @@ def create_dictionary(in_dir):
             doc_id = int(entry[0])
             content = splitter[1]
 
+            word_pos = 0
             for uncleaned_sentence in sent_tokenize(content):
                 # Remove trailing special characters + Case-fold
                 sentence = uncleaned_sentence.strip().lower()
@@ -50,15 +52,17 @@ def create_dictionary(in_dir):
                         last_id, last_freq = posting[-1]
 
                         if last_id == doc_id:
-                            posting[-1] = (last_id, last_freq + 1)
+                            posting[-1] = (last_id, last_freq + [word_pos])
                         else:
-                            posting.append((doc_id, 1))
+                            posting.append((doc_id, [word_pos]))
                             freq += 1
 
                         term_dict[term] = (freq, posting)
                     else:
                         # Create tuple of freq and posting of term
-                        term_dict[term] = (1, [(doc_id, 1)])
+                        term_dict[term] = (1, [(doc_id, [word_pos])])
+                        
+                    word_pos += 1
 
                 # Compute document length
                 weighted_tfs = []
@@ -87,15 +91,14 @@ def build_index(in_dir, out_dict, out_postings):
     dictionary_file = {}
     term_dict, doc_weight = create_dictionary(in_dir)
     
-    print(term_dict)
-    print(doc_weight)
+    # print(term_dict)
+    # print(doc_weight)
 
     with open(out_postings, 'wb') as posting_f:
         # Write each term's posting list
         for term, posting in term_dict.items():
             written_pos = posting_f.tell()
             written_size = posting_f.write(pickle.dumps(posting))
-            print(posting)
             dictionary_file[term] = (len(posting), written_pos, written_size)
 
     with open(out_dict, 'wb') as f:
@@ -128,4 +131,7 @@ if input_dataset == None or output_file_postings == None or output_file_dictiona
 # if input_dataset[:-1] != "/":
 #     input_dataset += "/"
 
+start = time.time()
 build_index(input_dataset, output_file_dictionary, output_file_postings)
+end = time.time()
+print('Time Taken:', end - start)

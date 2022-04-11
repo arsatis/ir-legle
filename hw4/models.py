@@ -41,7 +41,7 @@ class VectorSpaceModel:
         Args:
             term (str): Target term
         Returns:
-            posting_list (list): List of documentId-frequency pairs
+            posting_list (list): List of documentId - list of positions pairs
         """
         if term not in self.dictionary:
             return []
@@ -95,7 +95,8 @@ class VectorSpaceModel:
                 
             wtq = query_vectors[query_term]
             posting_list = self.get_posting_list(query_term)
-            for doc_id, tf in posting_list[1]:
+            for doc_id, pos in posting_list[1]:
+                tf = len(pos)
                 wtd = self.doc_tf_idf.weight(tf)
                 score = wtq * wtd
                 scores[doc_id] += score
