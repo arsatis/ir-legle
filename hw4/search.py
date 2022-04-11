@@ -21,8 +21,56 @@ def get_posting_list(dictionary, postings, term):
 
     postings.seek(pos)
     posting_list = pickle.loads(postings.read(size))
-    
     return posting_list
+
+def boolean_retrieval(terms, dictionary, postings):
+    """
+    Compute and returns the result of a boolean query
+    Args:
+        terms   (list[str]): List of terms in a boolean query
+    Returns:
+        output  (list[int]): List of documentId(s) that satisfies the boolean query
+    """
+    output = []
+    #! Need to see how dic and posting list looks after implenting positional index + compression (maybe)
+    # For now, using get_posting_list()
+    # retrieve posting lists of each term: [(docId, tf), ...]
+    posting_lsts = []
+    for i in range(len(terms)):
+        posting_lst = get_posting_list(dictionary, postings, terms[i])
+        if posting_lst:
+            posting_lst = posting_lst[1]
+        posting_lsts.append(posting_lst)
+
+    print(posting_lsts)
+
+    # Optimisation: sort posting lists by len, start from smallest posting list.
+    posting_lsts.sort(key=len)
+
+    first_lst = posting_lsts[0]
+    second_lst = []
+    lst_index = 1
+    while lst_index < len(posting_lsts):
+        result_lst = []
+        second_lst = posting_lsts[lst_index]
+        first_lst_ptr = 0
+        second_lst_ptr = 0
+
+        while first_lst_ptr < len(first_lst) and second_lst_ptr < len(second_lst):
+            if first_lst[first_lst_ptr][0] == second_lst[second_lst_ptr][0]:
+                result_lst.append(first_lst[first_lst_ptr])
+                first_lst_ptr += 1
+                second_lst_ptr += 1
+            elif first_lst[first_lst_ptr][0] < second_lst[second_lst_ptr][0]:
+                first_lst_ptr += 1
+            else:
+                second_lst_ptr += 1
+        lst_index += 1
+        first_lst = result_lst
+
+    # convert tuple to just output the docId
+    output = [i[0] for i in first_lst]
+    return output
 
 def usage():
     print("usage: " + sys.argv[0] + " -d dictionary-file -p postings-file -q file-of-queries -o output-file-of-results")
@@ -45,7 +93,7 @@ def run_search(dict_file, postings_file, query_file, results_file):
 
     postings = open(postings_file, 'rb')
 
-    print(get_posting_list(dictionary, postings, 'yong'))
+    print("posting list of 'yong' : ", get_posting_list(dictionary, postings, 'yong'))
 
     with open(query_file) as f:
         count = 0
@@ -67,6 +115,9 @@ def run_search(dict_file, postings_file, query_file, results_file):
             free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
             score_id_pairs = free_text_model.cosine_score(query_details, k=10)
             print(list(score_id_pairs))
+        elif query_details.type == "boolean":
+            results = boolean_retrieval(query_details.terms, dictionary, postings)   
+            print(results)    
         else:
             pass
 

@@ -29,6 +29,14 @@ class QueryDetails:
                 self.type = "boolean"
                 AND_indexes.append(i)
 
+        # Error-checking: Check for proper usage of AND
+        if len(AND_indexes) > 0:
+            for i in range(len(AND_indexes) - 1):
+                if AND_indexes[i + 1] - AND_indexes[i] == 1:
+                    raise Exception("Boolean query: You can't have consecutive ANDs")
+            if AND_indexes[-1] == len(tokens) - 1:
+                raise Exception("Boolean Query: You can't have AND as the last term!")
+
         # Stemming + Case-folding
         ps = PorterStemmer()
         for i in range(len(tokens)):
@@ -37,7 +45,7 @@ class QueryDetails:
 
         print("tokens: ", tokens)
 
-        # TODO : Handle relevant_docs to do pseudo Relevant Feedback
+        # TODO : Handle relevant_docs to check against pseudo Relevant Feedback
         self.relevant_docs = relevant_docs
         
         # Check for quotations for phrasal queries
