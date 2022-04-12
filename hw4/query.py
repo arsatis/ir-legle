@@ -1,5 +1,6 @@
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
+from collections import Counter
 
 class QueryDetails:
     """
@@ -14,6 +15,7 @@ class QueryDetails:
         relevant_docs   (list[int])   : List of all the given relevant doc_ids 
         type            (str)         : The type of query which is either free-text / boolean / boolean with phrasal / phrasal
         terms           (list[str])   : All of the query terms, where phrasal queries will be in a nested list
+        counts          (Counter[str]): The frequency of each terms
     """
     def __init__(self, query, relevant_docs):
         self.type = "free-text"
@@ -69,3 +71,22 @@ class QueryDetails:
 
         if self.type == "free-text":
             self.terms = tokens
+        
+        self.counts = Counter(self.terms)
+
+class QueryRefiner:
+    # TODO: Docs
+
+    def __init__(self, query_details):
+        self.query_details = query_details
+    
+    def pseudo_relevance_feedback(self, doc_ids):
+        # TODO: Implement such that it mutates query_details with an updated .counts property
+        pass
+
+    def query_expansion(self):
+        # TODO: If we decide to implement this
+        pass
+    
+    def get_current_refined(self):
+        return self.query_details

@@ -62,7 +62,7 @@ class VectorSpaceModel:
 
         return self.document_weights[doc_id]
 
-    def cosine_score(self, query, k): 
+    def cosine_score(self, query, k = None): 
         """
         Computes the cosine score and returns the top k (score, doc_id) pairs
         Args:
@@ -75,10 +75,10 @@ class VectorSpaceModel:
         scores = defaultdict(float)
         
         # Calculate cosine score
-        query_detail = Counter(query.terms)
+        query_freq = query.counts
         query_vectors = defaultdict(float)
         # length_norm = 0
-        for query_term, query_term_freq in query_detail.items():
+        for query_term, query_term_freq in query_freq.items():
             if query_term not in self.dictionary:
                 continue
             wtq = self.query_tf_idf.weight(query_term_freq, N, self.get_doc_freq(query_term))
@@ -96,7 +96,7 @@ class VectorSpaceModel:
         #         query_vectors[query_term] /= length_norm
 
         # Calculate final score w/ doc weight. Lines 3-6 in lect algo
-        for query_term, query_term_freq in query_detail.items():
+        for query_term, query_term_freq in query_freq.items():
             if query_term not in self.dictionary:
                 continue
                 
@@ -111,6 +111,10 @@ class VectorSpaceModel:
         # Normalisation step. Line 8-9 of the lect algo
         for doc_id, score in scores.items():
             scores[doc_id] = score / self.get_document_weight(doc_id)
+
+        if k == None:
+            # does the same thing as .result() in top_k
+            return reversed(sorted([(score, doc_id) for doc_id, score in scores.items()]))
 
         # find top k results
         top_k = TopK(k)

@@ -3,7 +3,7 @@ import pickle
 import sys
 import getopt
 
-from query import QueryDetails
+from query import QueryDetails, QueryRefiner
 from models import VectorSpaceModel
 
 def get_posting_list(dictionary, postings, term):
@@ -115,7 +115,16 @@ def run_search(dict_file, postings_file, query_file, results_file):
             # vector space ranking for free text queries
             free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
             score_id_pairs = free_text_model.cosine_score(query_details, k=10)
-            print(list(score_id_pairs))
+
+            # TODO: This refiner does nothing at the moment
+            refiner = QueryRefiner(query_details)
+            refiner.pseudo_relevance_feedback([doc_id for _, doc_id in score_id_pairs])
+            refined_query = refiner.get_current_refined()
+
+            score_id_pairs = free_text_model.cosine_score(refined_query)
+
+            debug_lst = list(score_id_pairs)
+            print(debug_lst, len(debug_lst))
         elif query_details.type == "boolean":
             results = boolean_retrieval(query_details.terms, dictionary, postings)   
             print(results)    
