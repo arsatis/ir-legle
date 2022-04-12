@@ -53,11 +53,14 @@ class VectorSpaceModel:
         
         return posting_list
 
-    def get_document_weight(self, tf):
+    def get_document_weight(self, doc_id):
         """
-        TODO: documentation
+        TODO: documentation.
         """
-        return 1 + math.log10(tf) if tf >= 1 else 0
+        # we should only be calling this function on weights that we know exist
+        assert doc_id in self.document_weights
+
+        return self.document_weights[doc_id]
 
     def cosine_score(self, query, k): 
         """
@@ -74,21 +77,25 @@ class VectorSpaceModel:
         # Calculate cosine score
         query_detail = Counter(query.terms)
         query_vectors = defaultdict(float)
-        length_norm = 0
+        # length_norm = 0
         for query_term, query_term_freq in query_detail.items():
             if query_term not in self.dictionary:
                 continue
             wtq = self.query_tf_idf.weight(query_term_freq, N, self.get_doc_freq(query_term))
             query_vectors[query_term] = wtq
-            length_norm += wtq * wtq
+            # length_norm += wtq * wtq
         
-        # Normalize cosine score (TODO: fix this? iirc Christian mentioned that their method skipped some computation)
-        if length_norm > 0:
-            length_norm = math.sqrt(length_norm)
-            for query_term, _ in query_detail.items():
-                query_vectors[query_term] /= length_norm
+        # Note: To be faithful with the algorithm, we don't actually need to normalise
+        # by the length of the query.
+        # This might affect the raw scores, but it should not affect relative rankings.
+        # This part is kept here commented for easy reverting
 
-        # Calculate final score w/ doc weight
+        # if length_norm > 0:
+        #     length_norm = math.sqrt(length_norm)
+        #     for query_term, _ in query_detail.items():
+        #         query_vectors[query_term] /= length_norm
+
+        # Calculate final score w/ doc weight. Lines 3-6 in lect algo
         for query_term, query_term_freq in query_detail.items():
             if query_term not in self.dictionary:
                 continue
@@ -100,6 +107,10 @@ class VectorSpaceModel:
                 wtd = self.doc_tf_idf.weight(tf)
                 score = wtq * wtd
                 scores[doc_id] += score
+        
+        # Normalisation step. Line 8-9 of the lect algo
+        for doc_id, score in scores.items():
+            scores[doc_id] = score / self.get_document_weight(doc_id)
 
         # find top k results
         top_k = TopK(k)
