@@ -23,37 +23,19 @@ def get_posting_list(dictionary, postings, term):
     posting_list = pickle.loads(postings.read(size))
     return posting_list
 
-def boolean_retrieval(terms, dictionary, postings):
+def intersect_posting_lists(posting_lists):
     """
-    Compute and returns the result of a boolean query
-    Args:
-        terms   (list[str]): List of terms in a boolean query
-    Returns:
-        output  (list[int]): List of documentId(s) that satisfies the boolean query
+    Returns the intersection of a list of posting lists.
     """
-    output = []
-    #! Need to see how dic and posting list looks after implenting positional index + compression (maybe)
-    # For now, using get_posting_list()
-    # retrieve posting lists of each term: [(docId, tf), ...]
-    posting_lsts = []
-    for i in range(len(terms)):
-        posting_lst = get_posting_list(dictionary, postings, terms[i])
-        if posting_lst:
-            posting_lst = posting_lst[1]
-            print(posting_lst)
-        posting_lsts.append(posting_lst)
+    # sort posting lists by len, start from smallest posting list
+    posting_lists.sort(key=len)
 
-    print(posting_lsts)
-
-    # Optimisation: sort posting lists by len, start from smallest posting list.
-    posting_lsts.sort(key=len)
-
-    first_lst = posting_lsts[0]
+    first_lst = posting_lists[0]
     second_lst = []
     lst_index = 1
-    while lst_index < len(posting_lsts):
+    while lst_index < len(posting_lists):
         result_lst = []
-        second_lst = posting_lsts[lst_index]
+        second_lst = posting_lists[lst_index]
         first_lst_ptr = 0
         second_lst_ptr = 0
 
@@ -71,6 +53,83 @@ def boolean_retrieval(terms, dictionary, postings):
 
     # convert tuple to just output the docId
     output = [i[0] for i in first_lst]
+    return output
+
+def boolean_retrieval(dictionary, postings, terms):
+    """
+    Compute and returns the result of a boolean query
+    Args:
+        terms   (list[str]): List of terms in a boolean query
+    Returns:
+        output  (list[int]): List of documentId(s) that satisfies the boolean query
+    """
+    #! Need to see how dic and posting list looks after implenting positional index + compression (maybe)
+    # For now, using get_posting_list()
+    # retrieve posting lists of each term: [(docId, tf), ...]
+    posting_lists = []
+    for i in range(len(terms)):
+        posting_lst = get_posting_list(dictionary, postings, terms[i])
+        if posting_lst:
+            posting_lst = posting_lst[1]
+        posting_lists.append(posting_lst)
+
+    print(posting_lists)
+    output = intersect_posting_lists(posting_lists)
+    return output
+
+def phrasal_retrieval(dictionary, postings, terms):
+    """
+    Compute and returns the result of a phrasal query
+    Args:
+        terms   (list[str]): List of terms in a phrasal query
+    Returns:
+        output  (list[int]): List of documentId(s) that satisfies the phrasal query
+    """
+    #! Need to see how dic and posting list looks after implenting compression (maybe)
+    posting_lists = []
+
+    for phrase in terms:
+        posting_list = None
+        for word in phrase:
+            word_posting_list = get_posting_list(dictionary, postings, word)
+            if word_posting_list:
+                word_posting_list = word_posting_list[1]
+
+                # if word is first in the phrase -> set it as the main posting list
+                # warning: do not check for not posting_list -> will return True if posting_list is an empty list
+                if posting_list == None:
+                    posting_list = word_posting_list
+                    continue
+
+                # else if word is somewhere in the middle of the phrase -> intersect posting lists
+                idx_pl = len(posting_list) - 1
+                idx_wpl = len(word_posting_list) - 1
+                while idx_pl >= 0 and idx_wpl >= 0:
+                    # find same documents
+                    if posting_list[idx_pl][0] < word_posting_list[idx_wpl][0]:
+                        word_posting_list.pop(idx_wpl)
+                        idx_wpl -= 1
+                    elif posting_list[idx_pl][0] > word_posting_list[idx_wpl][0]:
+                        idx_pl -= 1
+                    else:
+                        _, positions = word_posting_list[idx_wpl]
+                        for i in reversed(range(len(positions))):
+                            if positions[i] - 1 not in posting_list[idx_pl][1]: # TODO: this line could be optimized (e.g., using two indices instead of not in) if needed
+                                positions.pop(i)
+                        if not positions:
+                            word_posting_list.pop(idx_wpl)
+                        idx_pl -= 1
+                        idx_wpl -= 1
+                while idx_pl < 0 and idx_wpl >= 0:
+                    word_posting_list.pop(idx_wpl)
+                    idx_wpl -= 1
+                    
+                # shortcut: positional info is no longer required after this part -> can just keep the positions of the prev word
+                posting_list = word_posting_list
+        posting_lists.append(posting_list)
+
+    print(posting_lists)
+    output = intersect_posting_lists(posting_lists)
     return output
 
 def usage():
@@ -94,7 +153,7 @@ def run_search(dict_file, postings_file, query_file, results_file):
 
     postings = open(postings_file, 'rb')
 
-    print("posting list of 'yong' : ", get_posting_list(dictionary, postings, 'yong'))
+    print("posting list of 'yong':", get_posting_list(dictionary, postings, 'yong'))
 
     with open(query_file, 'r') as f:
         count = 0
@@ -108,19 +167,19 @@ def run_search(dict_file, postings_file, query_file, results_file):
             count += 1
 
         query_details = QueryDetails(query, lst_of_relevant_docs)
-        print("type: ", query_details.type)
-        print("terms: ", query_details.terms)
+        print("type:", query_details.type)
+        print("terms:", query_details.terms)
 
         if query_details.type == "free-text":
-            # vector space ranking for free text queries
             free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
-            score_id_pairs = free_text_model.cosine_score(query_details, k=10)
-            print(list(score_id_pairs))
+            results = free_text_model.cosine_score(query_details, k=10)
         elif query_details.type == "boolean":
-            results = boolean_retrieval(query_details.terms, dictionary, postings)   
-            print(results)    
+            results = boolean_retrieval(dictionary, postings, query_details.terms)
+        elif query_details.type == "phrasal":
+            results = phrasal_retrieval(dictionary, postings, query_details.terms)
         else:
             pass
+        if results: print(results)
 
 dictionary_file = postings_file = query_file = output_file_of_results = None
 
