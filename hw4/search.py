@@ -112,16 +112,18 @@ def run_search(dict_file, postings_file, query_file, results_file):
         print("terms: ", query_details.terms)
 
         if query_details.type == "free-text":
+            refiner = QueryRefiner(query_details)
+            refiner.query_expansion(3)
+            refined_query = refiner.get_current_refined()
             # vector space ranking for free text queries
             free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
-            score_id_pairs = free_text_model.cosine_score(query_details, k=10)
+            score_id_pairs = free_text_model.cosine_score(refined_query, k=10)
 
             # TODO: This refiner does nothing at the moment
-            refiner = QueryRefiner(query_details)
-            refiner.pseudo_relevance_feedback([doc_id for _, doc_id in score_id_pairs])
-            refined_query = refiner.get_current_refined()
+            # refiner.pseudo_relevance_feedback([doc_id for _, doc_id in score_id_pairs])
+            # refined_query = refiner.get_current_refined()
 
-            score_id_pairs = free_text_model.cosine_score(refined_query)
+            # score_id_pairs = free_text_model.cosine_score(refined_query)
 
             debug_lst = list(score_id_pairs)
             print(debug_lst, len(debug_lst))

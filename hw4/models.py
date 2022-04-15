@@ -75,7 +75,7 @@ class VectorSpaceModel:
         scores = defaultdict(float)
         
         # Calculate cosine score
-        query_freq = query.counts
+        query_freq = Counter(query.terms)
         query_vectors = defaultdict(float)
         # length_norm = 0
         for query_term, query_term_freq in query_freq.items():
