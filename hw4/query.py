@@ -36,9 +36,9 @@ class QueryDetails:
         if len(AND_indexes) > 0:
             for i in range(len(AND_indexes) - 1):
                 if AND_indexes[i + 1] - AND_indexes[i] == 1:
-                    raise Exception("Boolean query: You can't have consecutive ANDs")
+                    raise Exception("Boolean query: You can't have consecutive ANDs.")
             if AND_indexes[-1] == len(tokens) - 1 or AND_indexes[0] == 0:
-                raise Exception("Boolean Query: You can't have AND as the first / last term!")
+                raise Exception("Boolean query: You can't have AND as the first / last term!")
 
         # Stemming + Case-folding
         ps = PorterStemmer()
