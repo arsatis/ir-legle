@@ -55,77 +55,63 @@ def intersect_posting_lists(posting_lists):
     output = [i[0] for i in first_lst]
     return output
 
-def boolean_retrieval(dictionary, postings, terms):
+def boolean_phrasal_retrieval(dictionary, postings, terms):
     """
-    Compute and returns the result of a boolean query
+    Compute and returns the result of a boolean/phrasal query
     Args:
-        terms   (list[str]): List of terms in a boolean query
+        terms   (list[str]): List of terms in a boolean/phrasal query
     Returns:
-        output  (list[int]): List of documentId(s) that satisfies the boolean query
-    """
-    #! Need to see how dic and posting list looks after implenting positional index + compression (maybe)
-    # For now, using get_posting_list()
-    # retrieve posting lists of each term: [(docId, tf), ...]
-    posting_lists = []
-    for i in range(len(terms)):
-        posting_lst = get_posting_list(dictionary, postings, terms[i])
-        if posting_lst:
-            posting_lst = posting_lst[1]
-        posting_lists.append(posting_lst)
-
-    print(posting_lists)
-    output = intersect_posting_lists(posting_lists)
-    return output
-
-def phrasal_retrieval(dictionary, postings, terms):
-    """
-    Compute and returns the result of a phrasal query
-    Args:
-        terms   (list[str]): List of terms in a phrasal query
-    Returns:
-        output  (list[int]): List of documentId(s) that satisfies the phrasal query
+        output  (list[int]): List of documentId(s) that satisfies the boolean/phrasal query
     """
     #! Need to see how dic and posting list looks after implenting compression (maybe)
     posting_lists = []
 
     for phrase in terms:
-        posting_list = None
-        for word in phrase:
-            word_posting_list = get_posting_list(dictionary, postings, word)
-            if word_posting_list:
-                word_posting_list = word_posting_list[1]
+        # boolean query
+        if isinstance(phrase, str):
+            posting_list = get_posting_list(dictionary, postings, phrase)
+            if posting_list:
+                posting_list = posting_list[1]
 
-                # if word is first in the phrase -> set it as the main posting list
-                # warning: do not check for not posting_list -> will return True if posting_list is an empty list
-                if posting_list == None:
-                    posting_list = word_posting_list
-                    continue
+        # phrasal query
+        else:
+            posting_list = None
+            for word in phrase:
+                word_posting_list = get_posting_list(dictionary, postings, word)
+                if word_posting_list:
+                    word_posting_list = word_posting_list[1]
 
-                # else if word is somewhere in the middle of the phrase -> intersect posting lists
-                idx_pl = len(posting_list) - 1
-                idx_wpl = len(word_posting_list) - 1
-                while idx_pl >= 0 and idx_wpl >= 0:
-                    # find same documents
-                    if posting_list[idx_pl][0] < word_posting_list[idx_wpl][0]:
+                    # if word is first in the phrase -> set it as the main posting list
+                    # warning: do not check for not posting_list -> will return True if posting_list is an empty list
+                    if posting_list == None:
+                        posting_list = word_posting_list
+                        continue
+
+                    # else if word is somewhere in the middle of the phrase -> intersect posting lists
+                    idx_pl = len(posting_list) - 1
+                    idx_wpl = len(word_posting_list) - 1
+                    while idx_pl >= 0 and idx_wpl >= 0:
+                        # find same documents
+                        if posting_list[idx_pl][0] < word_posting_list[idx_wpl][0]:
+                            word_posting_list.pop(idx_wpl)
+                            idx_wpl -= 1
+                        elif posting_list[idx_pl][0] > word_posting_list[idx_wpl][0]:
+                            idx_pl -= 1
+                        else:
+                            _, positions = word_posting_list[idx_wpl]
+                            for i in reversed(range(len(positions))):
+                                if positions[i] - 1 not in posting_list[idx_pl][1]: # TODO: this line could be optimized (e.g., using two indices instead of not in) if needed
+                                    positions.pop(i)
+                            if not positions:
+                                word_posting_list.pop(idx_wpl)
+                            idx_pl -= 1
+                            idx_wpl -= 1
+                    while idx_pl < 0 and idx_wpl >= 0:
                         word_posting_list.pop(idx_wpl)
                         idx_wpl -= 1
-                    elif posting_list[idx_pl][0] > word_posting_list[idx_wpl][0]:
-                        idx_pl -= 1
-                    else:
-                        _, positions = word_posting_list[idx_wpl]
-                        for i in reversed(range(len(positions))):
-                            if positions[i] - 1 not in posting_list[idx_pl][1]: # TODO: this line could be optimized (e.g., using two indices instead of not in) if needed
-                                positions.pop(i)
-                        if not positions:
-                            word_posting_list.pop(idx_wpl)
-                        idx_pl -= 1
-                        idx_wpl -= 1
-                while idx_pl < 0 and idx_wpl >= 0:
-                    word_posting_list.pop(idx_wpl)
-                    idx_wpl -= 1
-                    
-                # shortcut: positional info is no longer required after this part -> can just keep the positions of the prev word
-                posting_list = word_posting_list
+                        
+                    # shortcut: positional info is no longer required after this part -> can just keep the positions of the prev word
+                    posting_list = word_posting_list
         posting_lists.append(posting_list)
 
     print(posting_lists)
@@ -186,13 +172,9 @@ def run_search(dict_file, postings_file, query_file, results_file):
 
             debug_lst = list(score_id_pairs)
             print(debug_lst, len(debug_lst))
-        elif query_details.type == "boolean":
-            results = boolean_retrieval(dictionary, postings, query_details.terms)
-        elif query_details.type == "phrasal":
-            results = phrasal_retrieval(dictionary, postings, query_details.terms)
         else:
-            pass
-        if results: print(results)
+            results = boolean_phrasal_retrieval(dictionary, postings, query_details.terms)
+            print(results)
 
 dictionary_file = postings_file = query_file = output_file_of_results = None
 
