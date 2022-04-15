@@ -25,7 +25,7 @@ def get_posting_list(dictionary, postings, term):
 
 def intersect_posting_lists(posting_lists):
     """
-    Returns the intersection of a list of posting lists.
+    Returns the intersection of a list of posting lists along with the total term frequency.
     """
     # sort posting lists by len, start from smallest posting list
     posting_lists.sort(key=len)
@@ -52,8 +52,13 @@ def intersect_posting_lists(posting_lists):
         first_lst = result_lst
 
     # convert tuple to just output the docId
-    output = [i[0] for i in first_lst]
+    output = [(i[0], len(i[1])) for i in first_lst]
     return output
+
+def rank_docs(docs):
+    docs.sort(key=lambda x: x[1], reverse=True)
+    print(docs)
+    return [i[0] for i in docs]
 
 def boolean_phrasal_retrieval(dictionary, postings, terms):
     """
@@ -114,8 +119,7 @@ def boolean_phrasal_retrieval(dictionary, postings, terms):
                     posting_list = word_posting_list
         posting_lists.append(posting_list)
 
-    print(posting_lists)
-    output = intersect_posting_lists(posting_lists)
+    output = rank_docs(intersect_posting_lists(posting_lists))
     return output
 
 def usage():
