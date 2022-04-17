@@ -1,3 +1,5 @@
 .DS_Store
 hw4/dataset.*
 hw4/__pycache__
+hw4/*.txt
+hw4/*.txt
