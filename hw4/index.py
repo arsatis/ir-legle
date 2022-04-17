@@ -25,15 +25,16 @@ def create_dictionary(in_dir):
     stemmer = PorterStemmer()
 
     with open(in_dir, 'r', encoding="utf8") as f:
-        reader = csv.reader(f) # read rows into a dictionary format
+        # Read rows into a dictionary format
+        # Format: document_id, title, content, date_posted, court
+        reader = csv.reader(f) 
+        
+        # Skip header
+        next(reader) 
+        
         for entry in reader:
-            splitter = entry[2].split("Judgment:") # Extracts zone: judgement
-            
-            if len(splitter) < 2:
-                continue
-
             doc_id = int(entry[0])
-            content = splitter[1]
+            content = entry[2]
 
             word_pos = 0
             for uncleaned_sentence in sent_tokenize(content):
@@ -52,7 +53,8 @@ def create_dictionary(in_dir):
                         last_id, last_freq = posting[-1]
 
                         if last_id == doc_id:
-                            posting[-1] = (last_id, last_freq + [word_pos])
+                            last_freq.append(word_pos)
+                            posting[-1] = (last_id, last_freq)
                         else:
                             posting.append((doc_id, [word_pos]))
                             freq += 1
@@ -126,10 +128,6 @@ for o, a in opts:
 if input_dataset == None or output_file_postings == None or output_file_dictionary == None:
     usage()
     sys.exit(2)
-
-# add trailing slash if missing for input directory
-# if input_dataset[:-1] != "/":
-#     input_dataset += "/"
 
 start = time.time()
 build_index(input_dataset, output_file_dictionary, output_file_postings)
