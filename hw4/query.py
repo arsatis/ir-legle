@@ -17,6 +17,7 @@ class QueryDetails:
         type            (str)         : The type of query which is either free-text / boolean / boolean with phrasal / phrasal
         terms           (list[str])   : All of the query terms, where phrasal queries will be in a nested list
         counts          (Counter[str]): The frequency of each terms
+        raw_tokens      (list[str])   : List of the raw tokens before stemming and case-folding
     """
     def __init__(self, query, relevant_docs):
         self.type = "free-text"
@@ -24,6 +25,7 @@ class QueryDetails:
 
         # Word_tokenization
         tokens = word_tokenize(query)
+        self.raw_tokens = tokens[:]
 
         # Check if it's a boolean query
         AND_indexes = []
@@ -86,16 +88,14 @@ class QueryRefiner:
 
     def query_expansion(self, new_synonyms_per_term):
         expander = WordnetExpander()
-        # TODO: the original input terms have gone through text processing (lemmatise etc), they might not be detected by wordnet
-        # eg 'exchang' in q2.txt
-        # Also, should these additional terms go through the same processing? (Lowercase, lemmatise, etc)
-        terms = self.query_details.terms
+        terms = self.query_details.raw_tokens
         additional_terms = expander.get_synonyms_of(terms, new_synonyms_per_term)
         
         print(f"terms in query expansion: {terms}")
         print(f"additional terms: {additional_terms}")
         new_terms = terms + additional_terms
-        self.query_details.terms = new_terms
+        new_query = " ".join(new_terms)
+        self.query_details = QueryDetails(new_query, self.query_details.relevant_docs)
     
     def get_current_refined(self):
         return self.query_details
@@ -126,10 +126,16 @@ class WordnetExpander:
         """
         Returns a list of k synonyms extracted from synsets
         """
+        def is_invalid_synonym(syn):
+            return (syn == term 
+                or syn in new_terms
+                or not syn.isalnum()
+                or syn == "AND") # edge case, we don't want free-text to become boolean query
+
         new_terms = set() # maxsize: k
         for synset in synsets:
             for syn in synset.lemma_names():
-                if syn == term or syn in new_terms:
+                if is_invalid_synonym(syn):
                     continue
                 
                 new_terms.add(syn)
