@@ -25,7 +25,7 @@ class QueryDetails:
 
         # Word_tokenization
         tokens = word_tokenize(query)
-        self.raw_tokens = tokens
+        self.raw_tokens = tokens[:]
 
         # Check if it's a boolean query
         AND_indexes = []
