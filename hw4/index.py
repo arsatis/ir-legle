@@ -6,11 +6,20 @@ import pickle
 import collections
 import math
 import time
+import re
 
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem import PorterStemmer
 
+# Csv Column Index
+ID = 0
+TITLE = 1
+CONTENT = 2
+
 def init_csvreader():
+    """
+    Initializes CSV Reader size. Allows for more rows to be read.
+    """
     maxInt = sys.maxsize
     while True:
         try:
@@ -19,10 +28,84 @@ def init_csvreader():
         except OverflowError:
             maxInt = int(maxInt/10)
 
+def tabulate_dictionary(term_dict, doc_weight, entry, zone):
+    """
+    Tabulates the term frequency and term position of an entry's column.
+    Args:
+        term_dict (dict): Dictionary of terms to postings
+        doc_weight (dict): Dictionary of documents to weights
+        entry (list): Entry data of current CSV row
+        zone (int): Entry column index to be tabulated
+    """
+    data = entry[zone]
+
+    # Changes doc_id based on zone chosen
+    # .t == title zone
+    # .c == content zone
+    if zone == TITLE:
+        doc_id = entry[ID] + '.t'
+    elif zone == CONTENT:
+        doc_id = entry[ID] + '.c'
+    else:
+        raise Exception('No such zone')
+
+    # Zero-index positions of terms
+    word_pos = 0
+    stemmer = PorterStemmer()
+    for uncleaned_sentence in sent_tokenize(data):
+        # Remove trailing special characters + Case-fold
+        sentence = uncleaned_sentence.strip().lower()
+        doc_dic = collections.defaultdict(int)
+
+        for unstemmed_word in word_tokenize(sentence):
+            # Porter Stemmer
+            term = stemmer.stem(unstemmed_word)
+            
+            doc_dic[term] += 1
+            if term in term_dict.keys():
+                # Increment term
+                freq, posting = term_dict[term]
+                last_id, last_freq = posting[-1]
+
+                if last_id == doc_id:
+                    last_freq.append(word_pos)
+                    posting[-1] = (last_id, last_freq)
+                else:
+                    posting.append((doc_id, [word_pos]))
+                    freq += 1
+
+                term_dict[term] = (freq, posting)
+            else:
+                # Create tuple of freq and posting of term
+                term_dict[term] = (1, [(doc_id, [word_pos])])
+                
+            word_pos += 1
+
+        # Compute document length
+        weighted_tfs = []
+        for term in doc_dic:
+            weighted_tfs.append(1 + math.log10(doc_dic[term]) if doc_dic[term] >= 1 else 0)
+        doc_length = math.sqrt(sum([x * x for x in weighted_tfs]))
+        doc_weight[doc_id] = doc_length
+
 def create_dictionary(in_dir):
+    """
+    Reads all entries in CSV and creates dictionary of terms in each document/zone, posting list of
+    documentId zones and positioning where term is located, and dictionary of term-length in each document/zone.
+    Args:
+        in_dir (str): File path of input CSV
+    Returns:
+        term_dict (dict): Dictionary of terms to postings
+        doc_weight (dict): Dictionary of documents to weights
+    """
+    def isChinese(entry):
+        # https://unicode-table.com/en/blocks/
+        # CJK Unified Ideographs
+        checker = re.compile(r'[\u4e00-\u9fff]+')
+        return checker.match(entry[TITLE]) != None
+    
     term_dict = {}
     doc_weight = {}
-    stemmer = PorterStemmer()
 
     with open(in_dir, 'r', encoding="utf8") as f:
         # Read rows into a dictionary format
@@ -33,45 +116,10 @@ def create_dictionary(in_dir):
         next(reader) 
         
         for entry in reader:
-            doc_id = int(entry[0])
-            content = entry[2]
-
-            word_pos = 0
-            for uncleaned_sentence in sent_tokenize(content):
-                # Remove trailing special characters + Case-fold
-                sentence = uncleaned_sentence.strip().lower()
-                doc_dic = collections.defaultdict(int)
-
-                for unstemmed_word in word_tokenize(sentence):
-                    # Porter Stemmer
-                    term = stemmer.stem(unstemmed_word)
-                    
-                    doc_dic[term] += 1
-                    if term in term_dict.keys():
-                        # Increment term
-                        freq, posting = term_dict[term]
-                        last_id, last_freq = posting[-1]
-
-                        if last_id == doc_id:
-                            last_freq.append(word_pos)
-                            posting[-1] = (last_id, last_freq)
-                        else:
-                            posting.append((doc_id, [word_pos]))
-                            freq += 1
-
-                        term_dict[term] = (freq, posting)
-                    else:
-                        # Create tuple of freq and posting of term
-                        term_dict[term] = (1, [(doc_id, [word_pos])])
-                        
-                    word_pos += 1
-
-                # Compute document length
-                weighted_tfs = []
-                for term in doc_dic:
-                    weighted_tfs.append(1 + math.log10(doc_dic[term]) if doc_dic[term] >= 1 else 0)
-                doc_length = math.sqrt(sum([x * x for x in weighted_tfs]))
-                doc_weight[doc_id] = doc_length
+            if isChinese(entry):
+               continue
+            tabulate_dictionary(term_dict, doc_weight, entry, TITLE)
+            tabulate_dictionary(term_dict, doc_weight, entry, CONTENT)
 
     return (term_dict, doc_weight)
 
