@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from asyncore import write
 import pickle
 import sys
 import getopt
@@ -58,7 +59,7 @@ def intersect_posting_lists(posting_lists):
 def rank_docs(docs):
     docs.sort(key=lambda x: x[1], reverse=True)
     print(docs)
-    return [i[0] for i in docs]
+    return docs
 
 def boolean_phrasal_retrieval(dictionary, postings, terms):
     """
@@ -145,7 +146,7 @@ def run_search(dict_file, postings_file, query_file, results_file):
 
     print("posting list of 'yong':", get_posting_list(dictionary, postings, 'yong'))
 
-    with open(query_file, 'r') as f:
+    with open(query_file, 'r') as f, open(results_file, 'w') as r_file:
         count = 0
         lst_of_relevant_docs = []
 
@@ -166,7 +167,7 @@ def run_search(dict_file, postings_file, query_file, results_file):
             refined_query = refiner.get_current_refined()
             # vector space ranking for free text queries
             free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
-            score_id_pairs = free_text_model.cosine_score(refined_query, k=10)
+            score_id_pairs = free_text_model.cosine_score(refined_query)
 
             # TODO: This refiner does nothing at the moment
             # refiner.pseudo_relevance_feedback([doc_id for _, doc_id in score_id_pairs])
@@ -174,11 +175,34 @@ def run_search(dict_file, postings_file, query_file, results_file):
 
             # score_id_pairs = free_text_model.cosine_score(refined_query)
 
-            debug_lst = list(score_id_pairs)
-            print(debug_lst, len(debug_lst))
+            results = [(id, score) for score, id in score_id_pairs]
         else:
             results = boolean_phrasal_retrieval(dictionary, postings, query_details.terms)
-            print(results)
+
+        a = 0.5
+        new_results = {}
+        for id, score in results:
+            clean_id = id[:-2]
+            if clean_id in new_results:
+                new_results[clean_id] += a * score
+            else:
+                new_results[clean_id] = a * score
+
+        results = list(new_results.items())
+        results.sort(key=lambda x: x[1], reverse=True)
+
+        write_result(r_file, results)
+
+def write_result(r_file, documentId_score_pairs):
+    """
+    Writes results of documentId_score pairs into results file
+    Args:
+        r_file (str): File path of output result file
+        documentId_score_pairs: List of documentId_score pairs
+    """
+    for id, _ in documentId_score_pairs:
+        r_file.write(str(id) + " ")
+
 
 dictionary_file = postings_file = query_file = output_file_of_results = None
 
