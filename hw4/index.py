@@ -149,7 +149,7 @@ def build_index(in_dir, out_dict, out_postings):
         for term, posting in term_dict.items():
             written_pos = posting_f.tell()
             written_size = posting_f.write(pickle.dumps(posting))
-            dictionary_file[term] = (len(posting), written_pos, written_size)
+            dictionary_file[term] = (posting[0], written_pos, written_size)
 
     with open(out_dict, 'wb') as f:
         # Write term dictonary and document weights
