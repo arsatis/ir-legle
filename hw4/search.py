@@ -163,7 +163,7 @@ def run_search(dict_file, postings_file, query_file, results_file):
 
         if query_details.type == "free-text":
             refiner = QueryRefiner(query_details)
-            refiner.query_expansion(3)
+            refiner.query_expansion(5)
             refined_query = refiner.get_current_refined()
             # vector space ranking for free text queries
             free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
