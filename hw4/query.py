@@ -74,6 +74,28 @@ class QueryDetails:
 
         if self.type == "free-text":
             self.terms = tokens
+    
+    def to_free_text(self):
+        """
+        Converts query from a boolean type to a free text type
+        """
+        def valid_raw_token(term):
+            invalid_tokens = ["''", "``", "AND"]
+            return term in invalid_tokens
+
+        if self.type == "free-text":
+            return
+
+        flattened_terms = []
+        for term in self.terms:
+            if isinstance(term, str):
+                flattened_terms.append(term)
+            else: # assume it's array
+                flattened_terms.extend(term)
+
+        self.terms = flattened_terms
+        self.raw_tokens = [term for term in self.raw_tokens if (not valid_raw_token(term))]
+        self.type = "free-text"
         
 
 class QueryRefiner:

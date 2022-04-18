@@ -158,26 +158,22 @@ def run_search(dict_file, postings_file, query_file, results_file):
             count += 1
 
         query_details = QueryDetails(query, lst_of_relevant_docs)
-        print("type:", query_details.type)
-        print("terms:", query_details.terms)
+        print("type before:", query_details.type)
+        print("terms before:", query_details.terms)
 
-        if query_details.type == "free-text":
-            refiner = QueryRefiner(query_details)
-            refiner.query_expansion(5)
-            refined_query = refiner.get_current_refined()
-            # vector space ranking for free text queries
-            free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
-            score_id_pairs = free_text_model.cosine_score(refined_query)
+        if query_details.type != "free-text": # boolean / boolean with phrasal
+            query_details.to_free_text()
 
-            # TODO: This refiner does nothing at the moment
-            # refiner.pseudo_relevance_feedback([doc_id for _, doc_id in score_id_pairs])
-            # refined_query = refiner.get_current_refined()
+        print("type after:", query_details.type)
+        print("terms after:", query_details.terms)
+        refiner = QueryRefiner(query_details)
+        refiner.query_expansion(5)
+        refined_query = refiner.get_current_refined()
+        # vector space ranking for free text queries
+        free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
+        score_id_pairs = free_text_model.cosine_score(refined_query)
 
-            # score_id_pairs = free_text_model.cosine_score(refined_query)
-
-            results = [(id, score) for score, id in score_id_pairs]
-        else:
-            results = boolean_phrasal_retrieval(dictionary, postings, query_details.terms)
+        results = [(id, score) for score, id in score_id_pairs]
 
         a = 0.5
         new_results = {}
