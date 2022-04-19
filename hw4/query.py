@@ -163,10 +163,10 @@ class WordnetExpander:
         all_new_terms = []
         for term, tag in tagged_terms:
             # try custom synonyms first
-            new_terms = self.get_custom_synonym(term, k)
-            if not new_terms: # turns out custom synonym doesn't give us anything
-                synsets = self.get_synsets(term, tag)
-                new_terms = self.get_k_from_synsets(synsets, term, k)
+            new_terms = self.get_custom_synonym(term, k // 2)
+
+            synsets = self.get_synsets(term, tag)
+            new_terms.extend(self.get_k_from_synsets(synsets, term, k - len(new_terms)))
             print(f"{term}: {new_terms}")
             all_new_terms.extend(new_terms)
 

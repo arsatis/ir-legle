@@ -167,7 +167,7 @@ def run_search(dict_file, postings_file, query_file, results_file):
         print("type after:", query_details.type)
         print("terms after:", query_details.terms)
         refiner = QueryRefiner(query_details)
-        refiner.query_expansion(5)
+        refiner.query_expansion(6)
         refined_query = refiner.get_current_refined()
         # vector space ranking for free text queries
         free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
