@@ -75,7 +75,7 @@ class VectorSpaceModel:
         if self.document_weights[doc_id][1] == 'H':
             return 10
         elif self.document_weights[doc_id][1] == 'M':
-            return 8
+            return 8.5
         elif self.document_weights[doc_id][1] == 'L':
             return 1
         else:
