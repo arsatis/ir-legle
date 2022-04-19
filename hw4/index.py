@@ -15,6 +15,14 @@ from nltk.stem import PorterStemmer
 ID = 0
 TITLE = 1
 CONTENT = 2
+COURT = 4
+
+H_courts = set(["SG Court of Appeal", "SG Privy Council", "UK House of Lords", "UK Supreme Court",
+                "High Court of Australia", "CA Supreme Court"])
+
+M_courts = set(["SG High Court", "Singapore International Commercial Court", "HK High Court", 
+                "HK Court of First Instance", "UK Crown Court", "UK Court of Appeal", "UK High Court",
+                "Federal Court of Australia", "NSW Court of Appeal", "NSW Court of Criminal Appeal", "NSW Supreme Court"])
 
 def init_csvreader():
     """
@@ -81,12 +89,22 @@ def tabulate_dictionary(term_dict, doc_weight, entry, zone):
                 
             word_pos += 1
 
-        # Compute document length
-        weighted_tfs = []
-        for term in doc_dic:
-            weighted_tfs.append(1 + math.log10(doc_dic[term]) if doc_dic[term] >= 1 else 0)
-        doc_length = math.sqrt(sum([x * x for x in weighted_tfs]))
-        doc_weight[doc_id] = doc_length
+    court = entry[COURT]
+    if court in H_courts:
+        importance = "H"
+    elif court in M_courts:
+        importance = "M"
+    else:
+        importance = "L"
+
+    # Compute document length
+    weighted_tfs = []
+    for term in doc_dic:
+        weighted_tfs.append(1 + math.log10(doc_dic[term]) if doc_dic[term] >= 1 else 0)
+    doc_length = math.sqrt(sum([x * x for x in weighted_tfs]))
+
+    # print(court, importance)
+    doc_weight[doc_id] = (doc_length, importance)
 
 def create_dictionary(in_dir):
     """

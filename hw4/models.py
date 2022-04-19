@@ -60,7 +60,16 @@ class VectorSpaceModel:
         # we should only be calling this function on weights that we know exist
         assert doc_id in self.document_weights
 
-        return self.document_weights[doc_id]
+        return self.document_weights[doc_id][0]
+
+    def get_document_importance(self, doc_id):
+        """
+        TODO: documentation.
+        """
+        # we should only be calling this function on weights that we know exist
+        assert doc_id in self.document_weights
+
+        return self.document_weights[doc_id][1]
 
     def cosine_score(self, query, k = None): 
         """
