@@ -161,6 +161,11 @@ def run_search(dict_file, postings_file, query_file, results_file):
         print("type before:", query_details.type)
         print("terms before:", query_details.terms)
 
+        if query_details.type == "invalid":
+            print("invalid query! result will be empty")
+            write_result(r_file, [])
+            return
+
         if query_details.type != "free-text": # boolean / boolean with phrasal
             query_details.to_free_text()
 
