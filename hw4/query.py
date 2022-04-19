@@ -39,9 +39,9 @@ class QueryDetails:
         if len(AND_indexes) > 0:
             for i in range(len(AND_indexes) - 1):
                 if AND_indexes[i + 1] - AND_indexes[i] == 1:
-                    raise Exception("Boolean query: You can't have consecutive ANDs.")
+                    self.type = "invalid"
             if AND_indexes[-1] == len(tokens) - 1 or AND_indexes[0] == 0:
-                raise Exception("Boolean query: You can't have AND as the first / last term!")
+                self.type = "invalid"
 
         # Stemming + Case-folding
         ps = PorterStemmer()
@@ -51,7 +51,6 @@ class QueryDetails:
 
         print("tokens: ", tokens)
 
-        # TODO : Handle relevant_docs to check against pseudo Relevant Feedback
         self.relevant_docs = relevant_docs
         
         # Check for quotations for phrasal queries
