@@ -98,6 +98,31 @@ class QueryDetails:
         self.type = "free-text"
         
 
+CUSTOM_SYNONYMS = [
+    set(['Murder', 'kill', 'victim', 'harm', 'manslaughter']),
+    set(['bail', 'ankle', 'electronic', 'monitoring', 'bond', 'exoneration', 'forfeiture', 'test', 'cost']),
+    set(['Knife', 'weapon', 'firearm', 'balaclava', 'ammunition', 'gun', 'machete', 'machine gun', 'rifle', 'shotgun', 'sword']),
+    set(['arson', 'fire', 'burn', 'ignite', 'pyro', 'firebombing']),
+    set(['Robbery', 'burglary', 'steal', 'money', 'jewelry', 'rob', 'heist', 'mask']),
+    set(['Provoke', 'taunt', 'tempt', 'threaten']),
+    set(['Assist', 'acquaint', 'accomplice', 'partner', 'in', 'crime']),
+    set(['Acquittal', 'extradition', 'not guilty']),
+    set(['Scam', 'fool', 'fake', 'fraud', 'blackmail', 'deceit', 'deception', 'extortion', 'hoax', 'sham', 'ripoff', 'cheat']),
+    set(['Hate', 'crime', 'racist', 'black', 'asian', 'yellow', 'white', 'race', 'police brutality', 'unfair', 'biased']),
+    set(['Corruption', 'bribe', 'extort', 'nepotism', 'fraud', 'graft']),
+    set(['scandal', 'misconduct', 'sex', 'grades', 'affair', 'gratification', 'explicitly', 'Darinne Ko']),
+    set(['Adult', 'mature', 'grownup', 'grown', 'of age', 'adolescent', 'infant', 'child', 'consent', '18', 'minor', 'legal', 'alcohol']),
+    set(['Kidnap', 'pay', 'ransom', 'threaten', 'phone', 'call', 'location', 'warehouse', 'abandon']),
+    set(['Drugs', 'death penalty', 'grams', 'medical marijuana', 'overdose', 'OD', 'drug cartel']),
+    set(['Arrest', 'capture', 'detention', 'prison', 'imprisonment', 'jail', 'incarceration', 'custody', 'stop', 'captivity']),
+    set(['Drink-driving', 'alcohol', 'influence', 'speeding', 'red-light', 'accident', 'incident', 'crash', 'totaled', 'car', 'negligent']),
+    set(['Rape', 'sex', 'intercourse', 'carnal knowledge', 'sexual assault', 'molest', 'violate', 'forced', 'penetration', 'penis', 'vagina']),
+    set(['Quiet', 'muted', 'silent', 'soft', 'reticent', 'hushed', 'muffled', 'low', 'mute', 'inaudible', 'tranquil']),
+    set(['Phone', 'telephone', 'contact', 'dial', 'buzz', 'call', 'ring', 'communicate', 'relay']),
+    set(['Prostitute', 'payment', 'gigolo', 'hooker', 'whore', 'call girl', 'degrade']),
+    set(['Damage', 'injury', 'burn', 'cripple', 'harm', 'hurt', 'impair', 'loss', 'ravage', 'ruin', 'scorch', 'tarnish', 'wound', 'wreck', 'rot', 'disfigure', 'deface', 'spoil']),
+]
+
 class QueryRefiner:
     # TODO: Docs
 
