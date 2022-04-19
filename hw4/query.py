@@ -109,7 +109,7 @@ class QueryRefiner:
         # TODO: Implement such that it mutates query_details with an updated .counts property
         pass
 
-    def query_expansion(self, new_synonyms_per_term):
+    def query_expansion(self, new_synonyms_per_term=0):
         expander = WordnetExpander()
         terms = self.query_details.raw_tokens
         additional_terms = expander.get_synonyms_of(terms, new_synonyms_per_term)
@@ -137,13 +137,13 @@ CUSTOM_SYNONYMS = [
     set(['corruption', 'bribe', 'extort', 'nepotism', 'fraud', 'graft']),
     set(['scandal', 'misconduct', 'sex', 'grades', 'affair', 'gratification', 'explicitly']),
     set(['adult', 'mature', 'grownup', 'grown', 'of age', 'adolescent', 'infant', 'child', 'consent', '18', 'minor', 'legal', 'alcohol']),
-    set(['kidnap', 'pay', 'ransom', 'threaten', 'phone', 'call', 'location', 'warehouse', 'abandon']),
+    set(['kidnap', 'pay', 'phone', 'call', 'warehouse', 'abandon']),
     set(['drugs', 'death penalty', 'grams', 'medical marijuana', 'overdose', 'OD', 'drug cartel']),
     set(['arrest', 'capture', 'detention', 'prison', 'imprisonment', 'jail', 'incarceration', 'custody', 'stop', 'captivity']),
     set(['drink-driving', 'alcohol', 'influence', 'speeding', 'red-light', 'accident', 'incident', 'crash', 'totaled', 'car', 'negligent']),
     set(['rape', 'sex', 'intercourse', 'carnal knowledge', 'sexual assault', 'molest', 'violate', 'forced', 'penetration', 'penis', 'vagina']),
-    set(['quiet', 'muted', 'silent', 'soft', 'reticent', 'hushed', 'muffled', 'low', 'mute', 'inaudible', 'tranquil']),
-    set(['phone', 'telephone', 'contact', 'dial', 'buzz', 'call', 'ring', 'communicate', 'relay']),
+    set(['quiet', 'muted', 'silent', 'soft', 'hushed', 'low', 'mute']),
+    set(['phone', 'telephone', 'call', 'ring', 'communicate', 'relay']),
     set(['prostitute', 'payment', 'gigolo', 'hooker', 'whore', 'call girl', 'degrade']),
     set(['damage', 'injury', 'burn', 'cripple', 'harm', 'hurt', 'impair', 'loss', 'ravage', 'ruin', 'scorch', 'tarnish', 'wound', 'wreck', 'rot', 'disfigure', 'deface', 'spoil']),
 ]
@@ -163,10 +163,10 @@ class WordnetExpander:
         all_new_terms = []
         for term, tag in tagged_terms:
             # try custom synonyms first
-            new_terms = self.get_custom_synonym(term, k // 2)
-
-            synsets = self.get_synsets(term, tag)
-            new_terms.extend(self.get_k_from_synsets(synsets, term, k - len(new_terms)))
+            new_terms = self.get_custom_synonym(term, k)
+            if not new_terms: # turns out custom synonym doesn't give us anything
+                synsets = self.get_synsets(term, tag)
+                new_terms = self.get_k_from_synsets(synsets, term, k)
             print(f"{term}: {new_terms}")
             all_new_terms.extend(new_terms)
 
@@ -177,13 +177,22 @@ class WordnetExpander:
         for syns in CUSTOM_SYNONYMS:
             if term in syns:
                 syns_copy = syns.copy()
-                syns_copy.remove(term) # don't want to use this term
-                new_terms.extend(random.sample(syns_copy, k))
-        
-        if len(new_terms) > k: # we only want k things
-            new_terms = random.sample(new_terms, k)
-
+                new_terms.extend(syns_copy)
         return new_terms
+        
+        # randomly draws k terms to be included in the expanded query
+        # not used for now, code kept here just in case reversion is needed
+        # new_terms = []
+        # for syns in CUSTOM_SYNONYMS:
+        #     if term in syns:
+        #         syns_copy = syns.copy()
+        #         syns_copy.remove(term) # don't want to use this term
+        #         new_terms.extend(random.sample(syns_copy, k))
+        
+        # if len(new_terms) > k: # we only want k things
+        #     new_terms = random.sample(new_terms, k)
+
+        # return new_terms
     
     # extracted to a function because I needed to return from innermost loop to "break" out of two loops
     def get_k_from_synsets(self, synsets, term, k):
