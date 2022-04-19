@@ -62,14 +62,24 @@ class VectorSpaceModel:
 
         return self.document_weights[doc_id][0]
 
-    def get_document_importance(self, doc_id):
+    def get_document_importance(self, doc_id, get_vals=False):
         """
         TODO: documentation.
         """
         # we should only be calling this function on weights that we know exist
         assert doc_id in self.document_weights
 
-        return self.document_weights[doc_id][1]
+        if not get_vals:
+            return self.document_weights[doc_id][1]
+
+        if self.document_weights[doc_id][1] == 'H':
+            return 10
+        elif self.document_weights[doc_id][1] == 'M':
+            return 8
+        elif self.document_weights[doc_id][1] == 'L':
+            return 1
+        else:
+            return 0
 
     def cosine_score(self, query, k = None): 
         """
@@ -123,11 +133,11 @@ class VectorSpaceModel:
 
         if k == None:
             # does the same thing as .result() in top_k
-            return reversed(sorted([(score, doc_id) for doc_id, score in scores.items()]))
+            return reversed(sorted([(score * self.get_document_importance(doc_id, get_vals=True), doc_id) for doc_id, score in scores.items()]))
 
         # find top k results
         top_k = TopK(k)
         for doc_id, score in scores.items():
-            top_k.add((score, doc_id))
+            top_k.add((score * self.get_document_importance(doc_id, get_vals=True), doc_id))
         
         return top_k.result()
