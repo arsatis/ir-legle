@@ -2,6 +2,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 from nltk.corpus import wordnet as wn
 import nltk
+import random
 
 class QueryDetails:
     """
@@ -122,6 +123,31 @@ class QueryRefiner:
     def get_current_refined(self):
         return self.query_details
 
+CUSTOM_SYNONYMS = [
+    set(['murder', 'kill', 'victim', 'harm', 'manslaughter']),
+    set(['bail', 'ankle', 'electronic', 'monitoring', 'bond', 'exoneration', 'forfeiture', 'test', 'cost']),
+    set(['knife', 'weapon', 'firearm', 'balaclava', 'ammunition', 'gun', 'machete', 'machine gun', 'rifle', 'shotgun', 'sword']),
+    set(['arson', 'fire', 'burn', 'ignite', 'pyro', 'firebombing']),
+    set(['robbery', 'burglary', 'steal', 'money', 'jewelry', 'rob', 'heist', 'mask']),
+    set(['provoke', 'taunt', 'tempt', 'threaten']),
+    set(['assist', 'acquaint', 'accomplice', 'partner', 'in', 'crime']),
+    set(['acquittal', 'extradition', 'not guilty']),
+    set(['scam', 'fool', 'fake', 'fraud', 'blackmail', 'deceit', 'deception', 'extortion', 'hoax', 'sham', 'ripoff', 'cheat']),
+    set(['hate', 'crime', 'racist', 'black', 'asian', 'yellow', 'white', 'race', 'police brutality', 'unfair', 'biased']),
+    set(['corruption', 'bribe', 'extort', 'nepotism', 'fraud', 'graft']),
+    set(['scandal', 'misconduct', 'sex', 'grades', 'affair', 'gratification', 'explicitly']),
+    set(['adult', 'mature', 'grownup', 'grown', 'of age', 'adolescent', 'infant', 'child', 'consent', '18', 'minor', 'legal', 'alcohol']),
+    set(['kidnap', 'pay', 'ransom', 'threaten', 'phone', 'call', 'location', 'warehouse', 'abandon']),
+    set(['drugs', 'death penalty', 'grams', 'medical marijuana', 'overdose', 'OD', 'drug cartel']),
+    set(['arrest', 'capture', 'detention', 'prison', 'imprisonment', 'jail', 'incarceration', 'custody', 'stop', 'captivity']),
+    set(['drink-driving', 'alcohol', 'influence', 'speeding', 'red-light', 'accident', 'incident', 'crash', 'totaled', 'car', 'negligent']),
+    set(['rape', 'sex', 'intercourse', 'carnal knowledge', 'sexual assault', 'molest', 'violate', 'forced', 'penetration', 'penis', 'vagina']),
+    set(['quiet', 'muted', 'silent', 'soft', 'reticent', 'hushed', 'muffled', 'low', 'mute', 'inaudible', 'tranquil']),
+    set(['phone', 'telephone', 'contact', 'dial', 'buzz', 'call', 'ring', 'communicate', 'relay']),
+    set(['prostitute', 'payment', 'gigolo', 'hooker', 'whore', 'call girl', 'degrade']),
+    set(['damage', 'injury', 'burn', 'cripple', 'harm', 'hurt', 'impair', 'loss', 'ravage', 'ruin', 'scorch', 'tarnish', 'wound', 'wreck', 'rot', 'disfigure', 'deface', 'spoil']),
+]
+
 # if wanna be extensible, can make this implement an "interface"
 # and then have different classes denoting different thesaurus implement that interface
 # but it's not an SWE project so we keep it at this
@@ -136,12 +162,28 @@ class WordnetExpander:
         tagged_terms = nltk.pos_tag(terms)
         all_new_terms = []
         for term, tag in tagged_terms:
-            synsets = self.get_synsets(term, tag)
-            new_terms = self.get_k_from_synsets(synsets, term, k)
+            # try custom synonyms first
+            new_terms = self.get_custom_synonym(term, k)
+            if not new_terms: # turns out custom synonym doesn't give us anything
+                synsets = self.get_synsets(term, tag)
+                new_terms = self.get_k_from_synsets(synsets, term, k)
             print(f"{term}: {new_terms}")
             all_new_terms.extend(new_terms)
 
         return all_new_terms
+    
+    def get_custom_synonym(self, term, k):
+        new_terms = []
+        for syns in CUSTOM_SYNONYMS:
+            if term in syns:
+                syns_copy = syns.copy()
+                syns_copy.remove(term) # don't want to use this term
+                new_terms.extend(random.sample(syns_copy, k))
+        
+        if len(new_terms) > k: # we only want k things
+            new_terms = random.sample(new_terms, k)
+
+        return new_terms
     
     # extracted to a function because I needed to return from innermost loop to "break" out of two loops
     def get_k_from_synsets(self, synsets, term, k):
