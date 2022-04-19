@@ -1,5 +1,5 @@
 from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
+from nltk.stem import WordNetLemmatizer, PorterStemmer
 from nltk.corpus import wordnet as wn
 import nltk
 
@@ -44,10 +44,12 @@ class QueryDetails:
 
         # Lemmatization (to verb form) + Case-folding
         lemmatizer = WordNetLemmatizer()
+        # stemmer = PorterStemmer()
         expander = WordnetExpander()
         new_tokens = []
         for term, tag in nltk.pos_tag(tokens):
             tag = expander.get_wordnet_pos(tag)
+            # term = stemmer.stem(term.lower())
             term = lemmatizer.lemmatize(term.lower(), pos=tag if tag else wn.VERB) # because lemmatizer cannot parse empty string as pos
             new_tokens.append(term)
         tokens = new_tokens

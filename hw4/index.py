@@ -9,7 +9,8 @@ import time
 import re
 
 from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.stem import PorterStemmer
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from datetime import timedelta
 
 # Csv Column Index
 ID = 0
@@ -59,16 +60,17 @@ def tabulate_dictionary(term_dict, doc_weight, entry, zone):
 
     # Zero-index positions of terms
     word_pos = 0
-    stemmer = PorterStemmer()
+    # stemmer = PorterStemmer()
+    lemmatizer = WordNetLemmatizer()
+    doc_dic = collections.defaultdict(int)
     for uncleaned_sentence in sent_tokenize(data):
         # Remove trailing special characters + Case-fold
         sentence = uncleaned_sentence.strip().lower()
-        doc_dic = collections.defaultdict(int)
 
-        for unstemmed_word in word_tokenize(sentence):
-            # Porter Stemmer
-            term = stemmer.stem(unstemmed_word)
-            
+        for unlemmatized_word in word_tokenize(sentence):
+            # term = stemmer.stem(unstemmed_word)
+            term = lemmatizer.lemmatize(unlemmatized_word, pos = "v")
+
             doc_dic[term] += 1
             if term in term_dict.keys():
                 # Increment term
@@ -195,7 +197,8 @@ if input_dataset == None or output_file_postings == None or output_file_dictiona
     usage()
     sys.exit(2)
 
+# Track time taken for indexing
 start = time.time()
 build_index(input_dataset, output_file_dictionary, output_file_postings)
 end = time.time()
-print('Time Taken:', end - start)
+print('Time Taken:', str(timedelta(seconds=math.ceil(end - start))))
