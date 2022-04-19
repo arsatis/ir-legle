@@ -176,7 +176,7 @@ def run_search(dict_file, postings_file, query_file, results_file):
         refined_query = refiner.get_current_refined()
         # vector space ranking for free text queries
         free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
-        score_id_pairs = free_text_model.cosine_score(refined_query, k=2800)
+        score_id_pairs = free_text_model.cosine_score(refined_query, k=2700) # TODO: goal = minimize k
 
         results = [(id, score) for score, id in score_id_pairs]
 

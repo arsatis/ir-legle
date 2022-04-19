@@ -1,8 +1,7 @@
 from nltk.tokenize import word_tokenize
-from nltk.stem import PorterStemmer
+from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet as wn
 import nltk
-import random
 
 class QueryDetails:
     """
@@ -43,11 +42,15 @@ class QueryDetails:
             if AND_indexes[-1] == len(tokens) - 1 or AND_indexes[0] == 0:
                 self.type = "invalid"
 
-        # Stemming + Case-folding
-        ps = PorterStemmer()
-        for i in range(len(tokens)):
-            tokens[i] = tokens[i].lower()
-            tokens[i] = ps.stem(tokens[i])
+        # Lemmatization (to verb form) + Case-folding
+        lemmatizer = WordNetLemmatizer()
+        expander = WordnetExpander()
+        new_tokens = []
+        for term, tag in nltk.pos_tag(tokens):
+            tag = expander.get_wordnet_pos(tag)
+            term = lemmatizer.lemmatize(term.lower(), pos=tag if tag else wn.VERB) # because lemmatizer cannot parse empty string as pos
+            new_tokens.append(term)
+        tokens = new_tokens
 
         print("tokens: ", tokens)
 
