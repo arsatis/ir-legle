@@ -60,7 +60,16 @@ class VectorSpaceModel:
         # we should only be calling this function on weights that we know exist
         assert doc_id in self.document_weights
 
-        return self.document_weights[doc_id]
+        return self.document_weights[doc_id][0]
+
+    def get_document_importance(self, doc_id):
+        """
+        TODO: documentation.
+        """
+        # we should only be calling this function on weights that we know exist
+        assert doc_id in self.document_weights
+
+        return self.document_weights[doc_id][1]
 
     def cosine_score(self, query, k = None): 
         """
@@ -109,8 +118,8 @@ class VectorSpaceModel:
                 scores[doc_id] += score
         
         # Normalisation step. Line 8-9 of the lect algo
-        for doc_id, score in scores.items():
-            scores[doc_id] = score / self.get_document_weight(doc_id)
+        # for doc_id, score in scores.items():
+        #     scores[doc_id] = score / self.get_document_weight(doc_id)
 
         if k == None:
             # does the same thing as .result() in top_k
