@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-from asyncore import write
 import pickle
 import sys
 import getopt
@@ -69,7 +68,6 @@ def boolean_phrasal_retrieval(dictionary, postings, terms):
     Returns:
         output  (list[int]): List of documentId(s) that satisfies the boolean/phrasal query
     """
-    #! Need to see how dic and posting list looks after implenting compression (maybe)
     posting_lists = []
 
     for phrase in terms:
@@ -144,8 +142,6 @@ def run_search(dict_file, postings_file, query_file, results_file):
 
     postings = open(postings_file, 'rb')
 
-    print("posting list of 'yong':", get_posting_list(dictionary, postings, 'yong'))
-
     with open(query_file, 'r') as f, open(results_file, 'w') as r_file:
         count = 0
         lst_of_relevant_docs = []
@@ -176,35 +172,35 @@ def run_search(dict_file, postings_file, query_file, results_file):
         refined_query = refiner.get_current_refined()
         # vector space ranking for free text queries
         free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
-        score_id_pairs = free_text_model.cosine_score(refined_query) # TODO: goal = minimize k
+        score_id_pairs = free_text_model.cosine_score(refined_query)
 
         results = [(id, score) for score, id in score_id_pairs]
 
-        a = 0.5
-        new_results = {}
-        for id, score in results:
-            clean_id = id[:-2]
-            if clean_id in new_results:
-                new_results[clean_id] += a * score
-            else:
-                new_results[clean_id] = (1 - a) * score
-        
-        # title_a = 0.2
-        # content_a = 1 - title_a
+        # a = 0.5
         # new_results = {}
         # for id, score in results:
-        #     zone = id[-1]
         #     clean_id = id[:-2]
-        #     if clean_id not in new_results:
-        #         if zone == "c":
-        #             new_results[clean_id] = content_a * score
-        #         else:
-        #             new_results[clean_id] = title_a * score
+        #     if clean_id in new_results:
+        #         new_results[clean_id] += a * score
         #     else:
-        #         if zone == "c":
-        #             new_results[clean_id] += content_a * score
-        #         else:
-        #             new_results[clean_id] += title_a * score
+        #         new_results[clean_id] = (1 - a) * score
+        
+        title_a = 0.2
+        content_a = 1 - title_a
+        new_results = {}
+        for id, score in results:
+            zone = id[-1]
+            clean_id = id[:-2]
+            if clean_id not in new_results:
+                if zone == "c":
+                    new_results[clean_id] = content_a * score
+                else:
+                    new_results[clean_id] = title_a * score
+            else:
+                if zone == "c":
+                    new_results[clean_id] += content_a * score
+                else:
+                    new_results[clean_id] += title_a * score
 
 
         results = list(new_results.items())

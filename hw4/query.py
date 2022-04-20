@@ -127,30 +127,53 @@ class QueryRefiner:
     def get_current_refined(self):
         return self.query_details
 
+# CUSTOM_SYNONYMS = [
+#     set(['murder', 'kill', 'victim', 'harm', 'manslaughter']),
+#     set(['bail', 'ankle', 'electronic', 'monitoring', 'bond', 'exoneration', 'forfeiture', 'test', 'cost']),
+#     set(['knife', 'weapon', 'firearm', 'balaclava', 'ammunition', 'gun', 'machete', 'machine gun', 'rifle', 'shotgun', 'sword']),
+#     set(['arson', 'fire', 'burn', 'ignite', 'pyro', 'firebombing']),
+#     set(['robbery', 'burglary', 'steal', 'money', 'jewelry', 'rob', 'heist', 'mask']),
+#     set(['provoke', 'taunt', 'tempt', 'threaten']),
+#     set(['assist', 'acquaint', 'accomplice', 'partner', 'in', 'crime']),
+#     set(['acquittal', 'extradition', 'not guilty']),
+#     set(['scam', 'fool', 'fake', 'fraud', 'blackmail', 'deceit', 'deception', 'extortion', 'hoax', 'sham', 'ripoff', 'cheat']),
+#     set(['hate', 'crime', 'racist', 'black', 'asian', 'yellow', 'white', 'race', 'police brutality', 'unfair', 'biased']),
+#     set(['corruption', 'bribe', 'extort', 'nepotism', 'fraud', 'graft']),
+#     set(['scandal', 'misconduct', 'sex', 'grades', 'affair', 'gratification', 'explicitly']),
+#     set(['adult', 'mature', 'grownup', 'grown', 'of age', 'adolescent', 'infant', 'child', 'consent', '18', 'minor', 'legal', 'alcohol']),
+#     set(['kidnap', 'pay', 'phone', 'call', 'warehouse', 'abandon']),
+#     set(['drugs', 'death penalty', 'grams', 'medical marijuana', 'overdose', 'OD', 'drug cartel']),
+#     set(['arrest', 'capture', 'detention', 'prison', 'imprisonment', 'jail', 'incarceration', 'custody', 'stop', 'captivity']),
+#     set(['drink-driving', 'alcohol', 'influence', 'speeding', 'red-light', 'accident', 'incident', 'crash', 'totaled', 'car', 'negligent']),
+#     set(['rape', 'sex', 'intercourse', 'carnal knowledge', 'sexual assault', 'molest', 'violate', 'forced', 'penetration', 'penis', 'vagina']),
+#     set(['quiet', 'muted', 'silent', 'soft', 'hushed', 'low', 'mute']),
+#     set(['phone', 'telephone', 'call', 'ring', 'communicate', 'relay']),
+#     set(['prostitute', 'payment', 'gigolo', 'hooker', 'whore', 'call girl', 'degrade']),
+#     set(['damage', 'injury', 'burn', 'cripple', 'harm', 'hurt', 'impair', 'loss', 'ravage', 'ruin', 'scorch', 'tarnish', 'wound', 'wreck', 'rot', 'disfigure', 'deface', 'spoil']),
+# ]
+
 CUSTOM_SYNONYMS = [
-    set(['murder', 'kill', 'victim', 'harm', 'manslaughter']),
-    set(['bail', 'ankle', 'electronic', 'monitoring', 'bond', 'exoneration', 'forfeiture', 'test', 'cost']),
-    set(['knife', 'weapon', 'firearm', 'balaclava', 'ammunition', 'gun', 'machete', 'machine gun', 'rifle', 'shotgun', 'sword']),
-    set(['arson', 'fire', 'burn', 'ignite', 'pyro', 'firebombing']),
-    set(['robbery', 'burglary', 'steal', 'money', 'jewelry', 'rob', 'heist', 'mask']),
-    set(['provoke', 'taunt', 'tempt', 'threaten']),
-    set(['assist', 'acquaint', 'accomplice', 'partner', 'in', 'crime']),
-    set(['acquittal', 'extradition', 'not guilty']),
-    set(['scam', 'fool', 'fake', 'fraud', 'blackmail', 'deceit', 'deception', 'extortion', 'hoax', 'sham', 'ripoff', 'cheat']),
-    set(['hate', 'crime', 'racist', 'black', 'asian', 'yellow', 'white', 'race', 'police brutality', 'unfair', 'biased']),
-    set(['corruption', 'bribe', 'extort', 'nepotism', 'fraud', 'graft']),
-    set(['scandal', 'misconduct', 'sex', 'grades', 'affair', 'gratification', 'explicitly']),
-    set(['adult', 'mature', 'grownup', 'grown', 'of age', 'adolescent', 'infant', 'child', 'consent', '18', 'minor', 'legal', 'alcohol']),
-    set(['kidnap', 'pay', 'phone', 'call', 'warehouse', 'abandon']),
-    set(['drugs', 'death penalty', 'grams', 'medical marijuana', 'overdose', 'OD', 'drug cartel']),
-    set(['arrest', 'capture', 'detention', 'prison', 'imprisonment', 'jail', 'incarceration', 'custody', 'stop', 'captivity']),
-    set(['drink-driving', 'alcohol', 'influence', 'speeding', 'red-light', 'accident', 'incident', 'crash', 'totaled', 'car', 'negligent']),
-    set(['rape', 'sex', 'intercourse', 'carnal knowledge', 'sexual assault', 'molest', 'violate', 'forced', 'penetration', 'penis', 'vagina']),
-    set(['quiet', 'muted', 'silent', 'soft', 'hushed', 'low', 'mute']),
-    set(['phone', 'telephone', 'call', 'ring', 'communicate', 'relay']),
-    set(['prostitute', 'payment', 'gigolo', 'hooker', 'whore', 'call girl', 'degrade']),
-    set(['damage', 'injury', 'burn', 'cripple', 'harm', 'hurt', 'impair', 'loss', 'ravage', 'ruin', 'scorch', 'tarnish', 'wound', 'wreck', 'rot', 'disfigure', 'deface', 'spoil']),
+    set(['quiet', 'silence', 'silent', 'psychiatric', 'injury', 'illness', 'fear', 'unpleasant', 'menacing']),
+    set(['phone', 'telephone', 'number', 'mobile']),
+    set(['call', 'dial', 'harass', 'assault', 'repeated', 'series', 'answer', 'threat']),
+    set(['prostitute', 'sex', 'acts', 'services', 'intercourse', 'oral', 'masturbate', 'threatened', 'vagina', 'solicit', 'Geylang', 'prostituting', 'girl']),
+    set(['forced', 'rape', 'threatened', 'penetrate', 'attempted', 'assault', 'oral', 'vaginal', 'anal']),
+    set(['sex', 'sexual', 'intercourse', 'obscene', 'bodily', 'harm', 'harms']),
+    set(['payment', 'gratification', 'reimbursed', 'accept', 'obtain', 'corruptly', 'reward', 'commission', 'valuable']),
+    set(['fertility', 'in vitro', 'fertilisation', 'IVF', 'ATD', 'reproductive', 'plan', 'pregnancy', 'embryo', 'treatment', 'child']),
+    set(['treatment', 'genetic', 'counselling', 'sperm', 'doctor']),
+    set(['damage', 'damages', 'fault', 'harm', 'injury', 'injure', 'suffer', 'suffering', 'death', 'foreseeable']),
+    set(['good', 'progress', 'practise']),
+    set(['grade', 'class', 'low', 'university', 'education', 'ranking']),
+    set(['exchange', 'emails', 'programme', 'smiles']),
+    set(['scandal', 'cheat', 'cheating', 'fraud', 'scam', 'cash-for-coursework']),
+    set(['child', 'parent', 'children', 'disabled', 'healthy', 'conditions', 'risks', 'birth', 'unborn']),
+    set(['fraud', 'fraudulently', 'thief']),
+    set(['traffic', 'collision', 'car', 'accident']),
+    set(['psychiatric', 'distress'])
 ]
+
+
 
 # if wanna be extensible, can make this implement an "interface"
 # and then have different classes denoting different thesaurus implement that interface
