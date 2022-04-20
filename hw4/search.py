@@ -10,7 +10,7 @@ def get_posting_list(dictionary, postings, term):
     """
     Retrieves posting list of term from posting file
     Args:
-        term (str): Target term
+        term          (str): Target term
     Returns:
         posting_list (list): List of documentId - list of positions pairs
     """
@@ -25,7 +25,12 @@ def get_posting_list(dictionary, postings, term):
 
 def intersect_posting_lists(posting_lists):
     """
+    NOTE: This method is deprecated.
     Returns the intersection of a list of posting lists along with the total term frequency.
+    Args:
+        posting_lists (list): List of posting lists along with the total term frequency
+    Returns:
+        output        (list): Intersection of the posting lists
     """
     # sort posting lists by len, start from smallest posting list
     posting_lists.sort(key=len)
@@ -56,28 +61,36 @@ def intersect_posting_lists(posting_lists):
     return output
 
 def rank_docs(docs):
+    """
+    NOTE: This method is deprecated.
+    Ranks the documents in descending order based on their weight.
+    Args:
+        docs   (list): List of documents along with their weights (i.e., counts)
+    Returns:
+        output (list): List of documents, sorted in descending order based on their weight
+    """
     docs.sort(key=lambda x: x[1], reverse=True)
-    print(docs)
     return docs
 
 def boolean_phrasal_retrieval(dictionary, postings, terms):
     """
-    Compute and returns the result of a boolean/phrasal query
+    NOTE: This method is deprecated.
+    Compute and returns the result of a boolean/phrasal query.
     Args:
-        terms   (list[str]): List of terms in a boolean/phrasal query
+        terms   (list): List of terms in a boolean/phrasal query
     Returns:
-        output  (list[int]): List of documentId(s) that satisfies the boolean/phrasal query
+        output  (list): List of documentId(s) that satisfies the boolean/phrasal query
     """
     posting_lists = []
 
     for phrase in terms:
-        # boolean query
+        # Boolean query
         if isinstance(phrase, str):
             posting_list = get_posting_list(dictionary, postings, phrase)
             if posting_list:
                 posting_list = posting_list[1]
 
-        # phrasal query
+        # Phrasal query
         else:
             posting_list = None
             for word in phrase:
@@ -85,13 +98,13 @@ def boolean_phrasal_retrieval(dictionary, postings, terms):
                 if word_posting_list:
                     word_posting_list = word_posting_list[1]
 
-                    # if word is first in the phrase -> set it as the main posting list
-                    # warning: do not check for not posting_list -> will return True if posting_list is an empty list
+                    # If word is first in the phrase -> set it as the main posting list
+                    # Warning: do not check for not posting_list -> will return True if posting_list is an empty list
                     if posting_list == None:
                         posting_list = word_posting_list
                         continue
 
-                    # else if word is somewhere in the middle of the phrase -> intersect posting lists
+                    # Else if word is somewhere in the middle of the phrase -> intersect posting lists
                     idx_pl = len(posting_list) - 1
                     idx_wpl = len(word_posting_list) - 1
                     while idx_pl >= 0 and idx_wpl >= 0:
@@ -104,7 +117,7 @@ def boolean_phrasal_retrieval(dictionary, postings, terms):
                         else:
                             _, positions = word_posting_list[idx_wpl]
                             for i in reversed(range(len(positions))):
-                                if positions[i] - 1 not in posting_list[idx_pl][1]: # TODO: this line could be optimized (e.g., using two indices instead of not in) if needed
+                                if positions[i] - 1 not in posting_list[idx_pl][1]:
                                     positions.pop(i)
                             if not positions:
                                 word_posting_list.pop(idx_wpl)
@@ -136,7 +149,6 @@ def run_search(dict_file, postings_file, query_file, results_file):
     """
     print('running search on the queries...')
 
-    # TEMPORARY READ DICT AND POSTING
     with open(dict_file, 'rb') as f:
         dictionary, document_weights = pickle.load(f)
 
@@ -154,23 +166,21 @@ def run_search(dict_file, postings_file, query_file, results_file):
             count += 1
 
         query_details = QueryDetails(query, lst_of_relevant_docs)
-        print("type before:", query_details.type)
-        print("terms before:", query_details.terms)
 
         if query_details.type == "invalid":
-            print("invalid query! result will be empty")
+            print("Invalid query! Result will be empty")
             write_result(r_file, [])
             return
 
-        if query_details.type != "free-text": # boolean / boolean with phrasal
+        if query_details.type != "free-text": # Boolean / boolean with phrasal
             query_details.to_free_text()
 
-        print("type after:", query_details.type)
-        print("terms after:", query_details.terms)
+        # Query Expansion
         refiner = QueryRefiner(query_details)
         refiner.query_expansion(6)
         refined_query = refiner.get_current_refined()
-        # vector space ranking for free text queries
+
+        # Vector space ranking for free text queries
         free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
         score_id_pairs = free_text_model.cosine_score(refined_query)
 
@@ -184,16 +194,15 @@ def run_search(dict_file, postings_file, query_file, results_file):
             zone = id[-1]
             clean_id = id[:-2]
             if clean_id not in new_results:
-                if zone == "c":
+                if zone == "c": # Content
                     new_results[clean_id] = content_a * score
-                else:
+                else: # Title
                     new_results[clean_id] = title_a * score
             else:
-                if zone == "c":
+                if zone == "c": # Content
                     new_results[clean_id] += content_a * score
-                else:
+                else: # Title
                     new_results[clean_id] += title_a * score
-
 
         results = list(new_results.items())
         results.sort(key=lambda x: x[1], reverse=True)

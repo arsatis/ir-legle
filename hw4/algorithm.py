@@ -23,7 +23,7 @@ class TopK:
     def result(self):
         """
         Inverts the elements of minimum heap into descending list
-        Returns::
-            Descending list of score-documentId pairs
+        Returns:
+            (list) Descending list of score-documentId pairs
         """
         return reversed(sorted(self.min_heap))

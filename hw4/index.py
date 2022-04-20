@@ -12,15 +12,17 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem import WordNetLemmatizer
 from datetime import timedelta
 
-# Csv Column Index
+# CSV Column Index
 ID = 0
 TITLE = 1
 CONTENT = 2
 COURT = 4
 
+# Court names with high importance
 H_courts = set(["SG Court of Appeal", "SG Privy Council", "UK House of Lords", "UK Supreme Court",
                 "High Court of Australia", "CA Supreme Court"])
 
+# Court names with medium importance
 M_courts = set(["SG High Court", "Singapore International Commercial Court", "HK High Court", 
                 "HK Court of First Instance", "UK Crown Court", "UK Court of Appeal", "UK High Court",
                 "Federal Court of Australia", "NSW Court of Appeal", "NSW Court of Criminal Appeal", "NSW Supreme Court"])
@@ -28,6 +30,7 @@ M_courts = set(["SG High Court", "Singapore International Commercial Court", "HK
 def init_csvreader():
     """
     Initializes CSV Reader size. Allows for more rows to be read.
+    Retrieved from: https://stackoverflow.com/questions/15063936/csv-error-field-larger-than-field-limit-131072.
     """
     maxInt = sys.maxsize
     while True:
@@ -41,10 +44,10 @@ def tabulate_dictionary(term_dict, doc_weight, entry, zone):
     """
     Tabulates the term frequency and term position of an entry's column.
     Args:
-        term_dict (dict): Dictionary of terms to postings
+        term_dict  (dict): Dictionary of terms to postings
         doc_weight (dict): Dictionary of documents to weights
-        entry (list): Entry data of current CSV row
-        zone (int): Entry column index to be tabulated
+        entry      (list): Entry data of current CSV row
+        zone       (int) : Entry column index to be tabulated
     """
     data = entry[zone]
 
@@ -67,7 +70,7 @@ def tabulate_dictionary(term_dict, doc_weight, entry, zone):
         sentence = uncleaned_sentence.strip().lower()
 
         for unlemmatized_word in word_tokenize(sentence):
-            # term = stemmer.stem(unstemmed_word)
+            # Verb lemmatization
             term = lemmatizer.lemmatize(unlemmatized_word, pos = "v")
 
             doc_dic[term] += 1
@@ -109,15 +112,23 @@ def tabulate_dictionary(term_dict, doc_weight, entry, zone):
 def create_dictionary(in_dir):
     """
     Reads all entries in CSV and creates dictionary of terms in each document/zone, posting list of
-    documentId zones and positioning where term is located, and dictionary of term-length in each document/zone.
+    documentId zones and positioning where term is located, and dictionary of term-length in each
+    document/zone.
     Args:
-        in_dir (str): File path of input CSV
+        in_dir      (str): File path of input CSV
     Returns:
-        term_dict (dict): Dictionary of terms to postings
+        term_dict  (dict): Dictionary of terms to postings
         doc_weight (dict): Dictionary of documents to weights
     """
     def isChinese(entry):
-        # https://unicode-table.com/en/blocks/
+        """
+        Checks if the entry contains Chinese characters.
+        Refer to https://unicode-table.com/en/blocks/ for unicode ranges.
+        Args:
+            entry (list): Row/entry data of dataset
+        Returns:
+               (boolean): True if contains Chinese, else False
+        """
         # CJK Unified Ideographs
         checker = re.compile(r'[\u4e00-\u9fff]+')
         return checker.match(entry[TITLE]) != None
@@ -148,8 +159,8 @@ def build_index(in_dir, out_dict, out_postings):
     """
     Builds index from documents stored in the input directory, then output the dictionary file and postings file
     Args:
-        in_dir (str): File path of input directory
-        out_dict (str): File path of output dictionary
+        in_dir       (str): File path of input directory
+        out_dict     (str): File path of output dictionary
         out_postings (str): File path of output posting
     """
     print('indexing...')
@@ -158,9 +169,6 @@ def build_index(in_dir, out_dict, out_postings):
     
     dictionary_file = {}
     term_dict, doc_weight = create_dictionary(in_dir)
-    
-    # print(term_dict)
-    # print(doc_weight)
 
     with open(out_postings, 'wb') as posting_f:
         # Write each term's posting list

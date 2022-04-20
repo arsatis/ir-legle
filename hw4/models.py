@@ -24,7 +24,7 @@ class VectorSpaceModel:
         """
         Retrieves frequency of term
         Args:
-            term (str): Target term
+            term     (str): Target term
         Returns:
             doc_freq (int): Number of documents that contain the term
         """
@@ -54,7 +54,11 @@ class VectorSpaceModel:
 
     def get_document_weight(self, doc_id):
         """
-        TODO: documentation.
+        Returns the document weight of document with the given id.
+        Args:
+            doc_id (str): Target document id
+        Returns:
+            (float): Weight of the target document
         """
         # we should only be calling this function on weights that we know exist
         assert doc_id in self.document_weights
@@ -63,7 +67,12 @@ class VectorSpaceModel:
 
     def get_document_importance(self, doc_id, get_vals=False):
         """
-        TODO: documentation.
+        Returns the weight of the document based on their court importance. (H, M, L)
+        Args:
+            doc_id       (str): Target document id
+            get_vals (boolean): True if return value should an float/score, false if the return value should be a str indicating the importance
+        Returns:
+            (float): Multiplier of court importance
         """
         # we should only be calling this function on weights that we know exist
         assert doc_id in self.document_weights
@@ -85,9 +94,9 @@ class VectorSpaceModel:
         Computes the cosine score and returns the top k (score, doc_id) pairs
         Args:
             query_detail (dict): Dictionary of query terms and frequency
-            k (int): Top number of results to return
+            k             (int): Top number of results to return
         Returns:
-            Descending list of score-documentId pairs (by score)
+            (list): Descending list of score-documentId pairs by score
         """
         N = len(self.document_weights)
         scores = defaultdict(float)
@@ -95,23 +104,12 @@ class VectorSpaceModel:
         # Calculate cosine score
         query_freq = Counter(query.terms)
         query_vectors = defaultdict(float)
-        # length_norm = 0
+        
         for query_term, query_term_freq in query_freq.items():
             if query_term not in self.dictionary:
                 continue
             wtq = self.query_tf_idf.weight(query_term_freq, N, self.get_doc_freq(query_term))
             query_vectors[query_term] = wtq
-            # length_norm += wtq * wtq
-        
-        # Note: To be faithful with the algorithm, we don't actually need to normalise
-        # by the length of the query.
-        # This might affect the raw scores, but it should not affect relative rankings.
-        # This part is kept here commented for easy reverting
-
-        # if length_norm > 0:
-        #     length_norm = math.sqrt(length_norm)
-        #     for query_term, _ in query_detail.items():
-        #         query_vectors[query_term] /= length_norm
 
         # Calculate final score w/ doc weight. Lines 3-6 in lect algo
         for query_term, query_term_freq in query_freq.items():

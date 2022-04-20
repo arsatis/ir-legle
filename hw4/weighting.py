@@ -10,6 +10,8 @@ class TermFrequency:
         Calculates logarithm frequency
         Args:
             term_freq (int): Frequency of term in the document
+        Returns:
+            (float): Tf
         """
         if term_freq <= 0:
             return 0
@@ -21,8 +23,10 @@ class TermFrequency:
         """
         Calculates term frequency weight
         Args:
-            setting (int): Type of term frequency calculation
+            setting   (int): Type of term frequency calculation
             term_freq (int): Frequency of term in the document
+        Returns:
+            (float): Score of term frequency tf
         """
         if setting == TermFrequency.LOGARITHM:
             return TermFrequency.logarithm(term_freq)
@@ -42,8 +46,10 @@ class DocumentFrequency:
         """
         Calculates idf
         Args:
-            N (int): The size of the collection
+            N        (int): The size of the collection
             doc_freq (int): Number of documents that contain the term
+        Returns:
+            (float): Idf
         """
         assert doc_freq <= N
         if doc_freq == 0:
@@ -56,9 +62,11 @@ class DocumentFrequency:
         """
         Calculates document frequency weight
         Args:
-            setting (int): Type of document frequency calculation
-            N (int): The size of the collection
+            setting  (int): Type of document frequency calculation
+            N        (int): The size of the collection
             doc_freq (int): Number of documents that contain the term
+        Returns:
+            (float): Score of document frequency idf
         """
         if setting == DocumentFrequency.NO:
             return DocumentFrequency.no()
@@ -83,8 +91,10 @@ class TfIdfWeight:
         Calculates weight using term frequency and document frequency
         Args:
             term_freq (int): Frequency of term
-            N (int): Total frequency of all terms
-            doc_freq (int): Frequency of document
+            N         (int): Total frequency of all terms
+            doc_freq  (int): Frequency of document
+        Returns:
+            (float): Score of term frequency and document frequency
         """
         return (TermFrequency.weight(self.tf_setting, term_freq) *
             DocumentFrequency.weight(self.df_setting, N, doc_freq))
