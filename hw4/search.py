@@ -176,15 +176,7 @@ def run_search(dict_file, postings_file, query_file, results_file):
 
         results = [(id, score) for score, id in score_id_pairs]
 
-        # a = 0.5
-        # new_results = {}
-        # for id, score in results:
-        #     clean_id = id[:-2]
-        #     if clean_id in new_results:
-        #         new_results[clean_id] += a * score
-        #     else:
-        #         new_results[clean_id] = (1 - a) * score
-        
+        # Score based on zone
         title_a = 0.2
         content_a = 1 - title_a
         new_results = {}

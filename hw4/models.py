@@ -1,4 +1,3 @@
-import math
 import pickle
 from weighting import TermFrequency, DocumentFrequency, TfIdfWeight
 from collections import defaultdict, Counter

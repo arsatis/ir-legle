@@ -9,7 +9,7 @@ import time
 import re
 
 from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.stem import WordNetLemmatizer
 from datetime import timedelta
 
 # Csv Column Index
@@ -60,7 +60,6 @@ def tabulate_dictionary(term_dict, doc_weight, entry, zone):
 
     # Zero-index positions of terms
     word_pos = 0
-    # stemmer = PorterStemmer()
     lemmatizer = WordNetLemmatizer()
     doc_dic = collections.defaultdict(int)
     for uncleaned_sentence in sent_tokenize(data):
@@ -105,7 +104,6 @@ def tabulate_dictionary(term_dict, doc_weight, entry, zone):
         weighted_tfs.append(1 + math.log10(doc_dic[term]) if doc_dic[term] >= 1 else 0)
     doc_length = math.sqrt(sum([x * x for x in weighted_tfs]))
 
-    # print(court, importance)
     doc_weight[doc_id] = (doc_length, importance)
 
 def create_dictionary(in_dir):
