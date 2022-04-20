@@ -128,8 +128,8 @@ class VectorSpaceModel:
                 scores[doc_id] += score
         
         # Normalisation step. Line 8-9 of the lect algo
-        for doc_id, score in scores.items():
-            scores[doc_id] = score / self.get_document_weight(doc_id)
+        # for doc_id, score in scores.items():
+        #     scores[doc_id] = score / self.get_document_weight(doc_id)
 
         if k == None:
             # does the same thing as .result() in top_k

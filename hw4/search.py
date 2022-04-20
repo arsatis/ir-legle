@@ -176,7 +176,7 @@ def run_search(dict_file, postings_file, query_file, results_file):
         refined_query = refiner.get_current_refined()
         # vector space ranking for free text queries
         free_text_model = VectorSpaceModel(dictionary, document_weights, postings)
-        score_id_pairs = free_text_model.cosine_score(refined_query, k=4000) # TODO: goal = minimize k
+        score_id_pairs = free_text_model.cosine_score(refined_query) # TODO: goal = minimize k
 
         results = [(id, score) for score, id in score_id_pairs]
 
@@ -188,6 +188,24 @@ def run_search(dict_file, postings_file, query_file, results_file):
                 new_results[clean_id] += a * score
             else:
                 new_results[clean_id] = (1 - a) * score
+        
+        # title_a = 0.2
+        # content_a = 1 - title_a
+        # new_results = {}
+        # for id, score in results:
+        #     zone = id[-1]
+        #     clean_id = id[:-2]
+        #     if clean_id not in new_results:
+        #         if zone == "c":
+        #             new_results[clean_id] = content_a * score
+        #         else:
+        #             new_results[clean_id] = title_a * score
+        #     else:
+        #         if zone == "c":
+        #             new_results[clean_id] += content_a * score
+        #         else:
+        #             new_results[clean_id] += title_a * score
+
 
         results = list(new_results.items())
         results.sort(key=lambda x: x[1], reverse=True)
