@@ -38,7 +38,7 @@ class VectorSpaceModel:
         """
         Retrieves posting list of term from posting file
         Args:
-            term (str): Target term
+            term          (str): Target term
         Returns:
             posting_list (list): List of documentId - list of positions pairs
         """

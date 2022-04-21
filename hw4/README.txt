@@ -101,7 +101,7 @@ For our next step, we will load the query-file and parse it in QueryDetails.
 In QueryDetails, these are the preprocessing techniques we have used: 
 - NLTK's word tokenization
 - Case-folding 
-WordNetLemmatizer's lemmatization 
+- WordNetLemmatizer's lemmatization 
 
 Subsequently, it will check for the type of the query, which is either boolean, phrasal, or
 free-text. It detects boolean queries via the "AND" keyword, and phrasal queries via its quotation
@@ -163,6 +163,25 @@ Finally, we write our rankings to the output file.
                    not included in submission
 - BONUS.docx     : Explanation of the bonus component.
 - README.txt     : This file
+
+== Allocation of work ==
+
+- A0188493L: Query Refinement (QueryRefiner and WordExpander classes), more query refinement
+  (Pseudo Relevant Feedback, part of bonus), various quality-of-life scripts when testing
+
+- A0218271J: Extraction of Test CSV, indexing of dataset (CSV, Zone), document weight normalization
+  & experimentation, dictionary & postings retrieval, weighting of zones, various dataset quality-
+  of-life script readers
+  
+- A0200025H: Parsing and checking of query-file (QueryDetails), standard boolean “AND” algorithm
+  [deprecated], experimented with another variant of free-text query processing [deprecated], 
+  experimented with WordNetLemmatizer instead of using PorterStemmer
+
+- A0206154N: Query processing (i.e., free text, phrasal [deprecated], and boolean-phrasal 
+  [deprecated]), weighing of courts during document weight computation, experimented with number of 
+  shown results (i.e., whether it affects precision)
+  
+- All: Testing and compilation, custom synset generation
 
 == Statement of individual work ==
 

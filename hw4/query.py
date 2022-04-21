@@ -164,9 +164,6 @@ CUSTOM_SYNONYMS = [
     set(['treatment', 'genetic', 'counselling', 'sperm', 'doctor'])
 ]
 
-# if wanna be extensible, can make this implement an "interface"
-# and then have different classes denoting different thesaurus implement that interface
-# but it's not an SWE project so we keep it at this
 class WordnetExpander:
     """
     The class that expands queries based on NLTK Wordnet. Some of the methods have been modified to use our custom synonym set.
