@@ -1,7 +1,7 @@
 This is the README file for A0188493L-A0218271J-A0200025H-A0206154N's submission.
 Email(s): e0324077@u.nus.edu
           e0544307@u.nus.edu
-	        e0407006@u.nus.edu
+          e0407006@u.nus.edu
           e0426077@u.nus.edu
 
 == Python Version ==
