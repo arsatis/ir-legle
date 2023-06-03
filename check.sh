@@ -6,7 +6,7 @@ DICTIONARY="dictionary.txt"
 POSTINGS="postings.txt"
 REQUIRED_FILES=5
 
-echo -e "Initialising CS3245 script..."
+echo -e "Initialising <redacted> script..."
 echo -e "Setting up..."
 submittedFiles=0
 echo -e "Set up completed!"
