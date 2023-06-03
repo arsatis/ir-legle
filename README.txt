@@ -1,9 +1,3 @@
-This is the README file for A0188493L-A0218271J-A0200025H-A0206154N's submission.
-Email(s): e0324077@u.nus.edu
-          e0544307@u.nus.edu
-          e0407006@u.nus.edu
-          e0426077@u.nus.edu
-
 == Python Version ==
 
 We're using Python Version 3.8.10 for this assignment.
@@ -37,11 +31,11 @@ to reduce the amount of bytes being written.
 Note also in this iterative step, we skip Chinese documents by detecting if the TITLE contains
 Chinese unicode characters from the CJK Unified Ideographs range.
 
-For indexing, these are the preprocessing techniques we have used: 
+For indexing, these are the preprocessing techniques we have used:
 - NLTK's sentence tokenization
 - NLTK's word tokenization
-- Case-folding 
-- WordNetLemmatizer's lemmatization 
+- Case-folding
+- WordNetLemmatizer's lemmatization
 
 During our preprocessing, we deviated away from PorterStemmer and towards WordNetLemmatizer because
 the latter preserves the semantics of the original text. On the other hand, the former simply
@@ -50,7 +44,7 @@ the word. As a result, using lemmas allows us to perform more language specific 
 such as speech. Since the dataset being processed is made up of court cases, they are primarily
 made up of text converted from spoken English rather than generic passages. Therefore, we take
 advantage of the format of the data by using lemmatization and reduce them into verbs as they
-contain the most semantic features in English. 
+contain the most semantic features in English.
 
 Furthermore, it is argued that lemmatization takes up more time to process compared to stemming;
 however, during our experimentation, the time it took to index and search was about the same. Thus,
@@ -63,16 +57,16 @@ incremented every term found per document so that each occurrence of a term woul
 a positional posting list (zero-indexed).
 
 After which the program converts the term-frequency of the weightage dictionary into weights of the
-terms in each document. This is done by iterating through each documentId and its terms, finding 
-their weights (i.e., log term frequency) and then normalizing the resultant weights with the 
+terms in each document. This is done by iterating through each documentId and its terms, finding
+their weights (i.e., log term frequency) and then normalizing the resultant weights with the
 sqrt(sum of weights^2).
 
-Additionally, when iterating through each document, we categorize them based on the "Notes about 
+Additionally, when iterating through each document, we categorize them based on the "Notes about
 Court Hierarchy" where those documents from court Most Important are labeled as H, Important as M
 and Rest as L, representing the importance / relevance of that document. Since both weightage and
 importance are associated directly to a document, the pair is stored in the same dictionary object.
 
-Lastly, the posting dictionary is then iterated to extract each final posting and written to 
+Lastly, the posting dictionary is then iterated to extract each final posting and written to
 postings-file, having its written size and position stored as a 'pointer' in a pointer dictionary.
 This new pointer dictionary, weightage-importance dictionary is then written to the dictionary-file.
 
@@ -97,11 +91,11 @@ access the file pointer to the relevant posting within the postings-file. Note t
 are not loaded in the same manner as the dictionary, due to the assumptions stated in the
 previous paragraph.
 
-For our next step, we will load the query-file and parse it in QueryDetails. 
-In QueryDetails, these are the preprocessing techniques we have used: 
+For our next step, we will load the query-file and parse it in QueryDetails.
+In QueryDetails, these are the preprocessing techniques we have used:
 - NLTK's word tokenization
-- Case-folding 
-- WordNetLemmatizer's lemmatization 
+- Case-folding
+- WordNetLemmatizer's lemmatization
 
 Subsequently, it will check for the type of the query, which is either boolean, phrasal, or
 free-text. It detects boolean queries via the "AND" keyword, and phrasal queries via its quotation
@@ -164,43 +158,14 @@ Finally, we write our rankings to the output file.
 - BONUS.docx     : Explanation of the bonus component.
 - README.txt     : This file
 
-== Allocation of work ==
-
-- A0188493L: Query Refinement (QueryRefiner and WordExpander classes), more query refinement
-  (Pseudo Relevant Feedback, part of bonus), various quality-of-life scripts when testing
-
-- A0218271J: Extraction of Test CSV, indexing of dataset (CSV, Zone), document weight normalization
-  & experimentation, dictionary & postings retrieval, weighting of zones, various dataset quality-
-  of-life script readers
-  
-- A0200025H: Parsing and checking of query-file (QueryDetails), standard boolean “AND” algorithm
-  [deprecated], experimented with another variant of free-text query processing [deprecated], 
-  experimented with WordNetLemmatizer instead of using PorterStemmer
-
-- A0206154N: Query processing (i.e., free text, phrasal [deprecated], and boolean-phrasal 
-  [deprecated]), weighing of courts during document weight computation, experimented with number of 
-  shown results (i.e., whether it affects precision)
-  
-- All: Testing and compilation, custom synset generation
-
 == Statement of individual work ==
 
 Please put a "x" (without the double quotes) into the bracket of the appropriate statement.
 
-[x] We, A0188493L-A0218271J-A0200025H-A0206154N, certify that we have followed the CS 3245
-Information Retrieval class guidelines for homework assignments.  In particular, we
+[x] We, <redacted>, certify that we have followed the <redacted> class guidelines for homework assignments.  In particular, we
 expressly vow that we have followed the Facebook rule in discussing
 with others in doing the assignment and did not take notes (digital or
 printed) from the discussions.
-
-[ ] We, A0188493L-A0218271J-A0200025H-A0206154N, did not follow the class rules regarding homework
-assignment, because of the following reason:
-
--
-
-We suggest that we should be graded as follows:
-
--
 
 == References ==
 
